@@ -1,0 +1,46 @@
+APPLICATION PROGAMING INTERFACE -> Interface progamavel de uma aplicação, serve para servir os dados ou informações para um cliente. Imaginamos que temos o nosso celular e um aplicativo que estamos utilizando para enviar uma mensagem, a mensagem é enviada pela API. Isso é muito comum para aplicativos móveis e agora também é muito comum para aplicações Web. Isso é muito comum em SPW (single page aplication).
+-----------------------------------------------------------------------------------
+                            TIPOS DE APIS
+                            
+REST -> Rest ou Representation State Transfer, o modelo de API mais utilizado hoje pelas aplicações Web e Apps. O modelo Rest pode ser utilizado com vários padrões como HTTP, JSON, XML e URL. A API geralmente está envolvida com a representação de um objeto enviado do frontend para o backend. As Apis são utilizadas para transportar um estado de um objeto. 
+EXEMPLO: 
+
+° Listar usuario: temos uma API conectada ao banco de dados e fazemos uma chamada dando um GET: http://api.crowsec.com.br/user 
+
+° Listar somente usuario com id:1  
+
+GET: http://api.crowsec.com.br/user/1
+
+° Cria um usuário novo: 
+
+POST: http://api.crowsec.com.br/users{"name":"Carlos","password":"senha@123"}
+
+° Atualizar um usurio: 
+
+PUT:http://api.crowsec.com.br/users{"name":"Carlos","password":"senha@2021"}
+
+° Deletar um usuario:
+
+DELETE:http://api.crowsec.com.br/users/2
+-----------------------------------------------------------------------------------
+GraphQL -> Uma linguagem de consulta criada pelo facebook em 2012. O padrão é HTTP com requisições POST e GET.
+EXEMPLO: Pegar todos os usuarios do banco de dados porém somente o id e o nome
+
+			Users{
+			id,
+			name
+			}
+-----------------------------------------------------------------------------------
+SOAP -> Foi o modelo de API mais utilizado no passado pelas aplicações web, o modelo SOAP utiliza HTTP e XML. Ele contém uma divisão como se fosse um envelope, contendo um header e um body. Ele envia as requisições utilizando um XML, O header nem sempre é necessário, podendo não ser usado.
+
+EXEMPLO:
+
+<?xml version="1.0"?>
+
+<soap:Envelope
+xmlns:soap="http://www.w3.org/2003/05/soap-envelope/"
+soap:encodingStyle="http://www.w3.org/2003/05/soap-encoding">
+  ...
+  Message information goes here
+  ...
+</soap:Envelope>

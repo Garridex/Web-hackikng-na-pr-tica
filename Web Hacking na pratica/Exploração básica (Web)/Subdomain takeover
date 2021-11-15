@@ -1,0 +1,21 @@
+O QUE É UM SUBDOMAIN TAKEOVER -> Antes de entrarmos na vulnerabilidade precisamos falar sobre DNS, que é o servidor responsavel por converter nomes para endereços ips. Dentro dos DNS, nós temos subdominios, por exemplo, temos o gmail.google.com, que é um subdominio do google, todo dominio e subdominio aponta para um endereço ip, isso se chama um registro A que é quando o nome aponta para um ip. Exemplo:
+
+crowsec.com.br -> 1.2.3.4 (A)
+
+NOME           -> IP (A)
+
+
+crowsec.com.br -> FFFF:FFFF:FFFF:FFFF (AAAA)
+
+NOME           -> IPv6 (AAAA)
+
+
+
+teste.crowsec.com.br -> teste2.crowsec.com.br (CNAME)
+
+NOME           -> NOME (CNAME)
+
+
+E como ocorre essa vulnerabilidade de subdomain takeover? -> Nós podemos ganhar acesso dentro de um subdmonio de um dominio raiz. Um dominio raiz é como exemplo crowsec.com.br, isso se trata de um dominio raiz.
+
+teste.crowsec.com.br é um subdominio, com essa falha conseguimos ganhar acesso ao teste.crowsec.com.br dependendo para onde ele está apontando. Por exemplo, temos um dominio site.crowsec.com.br e ele aponta para um repositorio no git por exemplo, tal como um github pages. É possivel apontarmos um site para um outro site totalmente diferente do dominio que estamos tentando, isso graças ao CNAME.

@@ -1,0 +1,27 @@
+Application discovery -> Temos 3 tópicos para falarmos sobre isso, URL discovery, Parameter Discovery e Content discovery.
+
+° URL discovery -> Descobrir URLS dentro de um subdominio dentro de uma aplicação.
+Focaremos em algumas ferramentas para descobrirmos isso.
+
+° Parameter discovery -> Quais parametros dentro de uma aplicação.
+
+° Content discovery -> Quais os conteudos dentro de uma aplicação.
+-----------------------------------------------------------------------------------
+                          URL DISCOVERY 
+                          
+·Gau (URL discovery) -> Pega URLs existentens nos subdominios. Ele funciona validando URls por serviços externos, insere um motor de pesquisa e retorna pra gente. Para utilizar somente ele podemos fazer com a seguinte sintaxe, damos um echo na url desejada e passamos via pipe pra ele: 
+
+	echo "teste.com.br" | gau
+
+-----------------------------------------------------------------------------------
+·Subfinder (subdomain discovery) -> Enumera subdominios.
+-----------------------------------------------------------------------------------
+·Httpx (content discovery) -> Essa ferramenta é utilizada para informar se aqueles dominios estão ativos ou não, com ela, nós podemos saber se o servidor web está rodando aquela parte da aplicação ou não. Podemos pegar a saida do subfinder e passar pra ele via pipe, dessa forma já temos o subdomain discovery junto com o content discovery. Podemos também incrementar a saida do httpx, utilizando -status-code. Podemos também testar um path especifico utilizando -path e o endereço a ser testado.
+-----------------------------------------------------------------------------------
+· ParamSpider (Parameter discovery) -> Utilizado para saber quais parametros do site podem ser refletidos ou não.
+-----------------------------------------------------------------------------------
+Caso formos fazer um pentest e precisarmos fazer um Recon rápido, podemos fazer da seguinte maneira -> Utilizar o subfinder e validar com o HTTPX e passar para o Gau para pegarmos Urls existentes nos subdominios.
+
+·subfinder -d mercadolivre.com.br -silent | httpx -silent | gau
+
+Podemos utilizar o comando acima para enumerar subdominios, validar se estão ativos ou não e pegar as urls dentro dos subdominios.

@@ -1,0 +1,43 @@
+COMO OCORRE CSRF -> Essa vulnerabilidade acontece graças a diversos fatores, como má configuração de cookies, do backend de estar recebendo requisições de outro site. Essa vulnerabilidade permite que um site faça requisições para outro site, por exemplo, temos dois sites, o http://hacker.com.br eu como hacker mal intencionado tenho acesso, e o https://portalrh.empresa.com.br, que somente o pessoal do rh pode acessar. O objetivo do ataque é, fazer com que meu site faça uma requisição para o site do RH para trocar o meu sálario. Como funciona esse ataque, basicamente precisamos que uma pessoa do rh esteja logada no sistema e na maioria das vezes esse ataque ocorre quando um usuario acessa um determinado site, igual um xss reflected, então podemos enviar o link do meu site para um pessoa que trabalha nessa empresa e assim que ela acessar o meu site, como eu tenho o controle sobre ele e seu conteudo, a ideia é fazer uma requisição saindo do meu site e ir ao portal da empresa alterando alguma informação, por exemplo fazer um POST para uma url que seja responsavél por trocar o salario dos funcionarios. Suponhamos que dentro da empresa tenha uma url que seja parecida com essa: 
+
+·https://portalrh.empresa.com.br/funcionarios.php?id=10&salario=1000
+
+Essa url é responsavel por trocar o salario dos funcionarios, então toda vez que eu fizer um GET pra essa url, o sistema entende que é pra alterar o sálario daquele funcionario. A questão é que tendo controle do meu site http://hacker.com.br, eu consigo injetar conteudos como um javascript, então eu consigo fazer uma requisição pra essa URL mudando os parametros, então quando o navegador da pessoa acessar o meu site, ele irá enviar a solicitação diretamente pro site do RH. Graças as defesas das aplicações de hoje em dia, pra essa vulnerabilidade ocorrer dessa forma, a pessoa tem que estar autenticada no site do RH, então precisa ser feito pra alguém que tenha essa possibilidade de fazer essa alteração.
+-----------------------------------------------------------------------------------
+COMO IDENTIFICAR ESSA VULNERABILIDADE -> Para identificarmos essa vulnerabilidade, podemos analisar o token CSRF e se ele está setado ou não, podemos também analisar tentando fazer o ataque se o token está sendo verificado ou não, podemos também ver como se comportam os cookies da aplicação e o comportamento da aplicação com o token, com o token alterado e etc. Podemos utilizar o burp para fazermos a análise desse tipo de vulnerabilidade.
+-----------------------------------------------------------------------------------
+COMO EXPLORAR ESSA VULNERABILIDADE -> Para isso, devemos criar um código html ou já termos um site sobre nosso controle. Primeiro precisamos identificar como estão os campos na aplicação final que queremos atacar, por exemplo os campos de usuario e senha ou email e senha
+
+	<form action="http://10.10.0.16/?action=update" method="POST">
+        <input type="hidden" name="email" value="guest@guest.com">
+        <input type="hidden" name="password" value="vitor">
+        <input type="submit" value="comprar esse item">
+    </form>
+
+Esses campos necessitam de ser iguais ao da aplicação final, já que iremos enviar uma requisição pra alterar esse conteudo do formulário da aplicação (no nosso caso o lab) Também devemos colocar para o nosso site enviar a requisição ao site atacado, nesse caso sendo o lab o form irá até esse endereço com a ação do parametro que realiza a troca de senhas (form action="http://10.10.0.16/?action=update" method="POST").
+
+O nosso formulário deve ser igual ao formulário da aplicação onde iremos forjar a requisição, sendo assim devemos ao encontrar essa vulnerabilidade analisar o código do formulário que queremos alterar. Ao subir esse formulário pro localhost, podemos utilizar o site que criamos para forçar uma troca de senha no usuario guest@guest.com, bastá inserirmos o email dele no parametro e alterarmos pra senha que desejarmos:
+
+<form action="http://10.10.0.16/?action=update" method="POST">
+        <input type="hidden" name="email" value="guest@guest.com">
+        <input type="hidden" name="password" value="vitor">
+        <input type="submit" value="comprar esse item">
+    </form>
+        
+Porém, não podemos fazer isso com o email do admin, pois ele tem o token de sessão logado, isso significa que precisamos que ele mesmo force a requisição pra gente, por isso esse ataque exige um certo nivel de engenharia social.
+
+Podemos fazer com que somente ao acessar o site, a vitima já envie a requisição pro nosso servidor, utilizando javascript, podemos adicionar mais uma linha de código e executarmos essa ação:
+
+	<form action="http://10.10.0.16/?action=update" method="POST" id="form">
+        <input type="hidden" name="email" value="guest@guest.com">
+        <input type="hidden" name="password" value="vitor">
+        </form>
+        <script>
+        document.getElementById('form').submit();
+        </script>
+        
+Pronto, dessa forma, quando a vitima acessar o formulário a aplicação já ira enviar uma requisição até o alvo (laboratorio) e trocar as senhas do usuario padrão. Se pudermos reproduzir esse cenario dentro de uma aplicação.
+
+Outro ponto a se atentar também é, devemos sempre pensar em como está a url para passarmos ao nosso form, no caso do lab, estavamos tentando utilizar o endereço ip da maquina, porém por estar dentro de um container, a pessoa que a acessou a maquina está acessando com a seguinte url: http://localhost/?action=update
+
+Então não iriamos conseguir trocar a senha passando a url errada. Ao enviarmos o site a vitiama, conseguimos trigar o CSRF e alterar a senha do admin. Esse ataque somente é possivel quando o cookie está com o parametro SameSite setado como none, pois dessa forma é possivel enviar ele em todos os contextos até mesmo em sites cruzados

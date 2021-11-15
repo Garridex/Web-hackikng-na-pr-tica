@@ -1,0 +1,183 @@
+OWASP -> Open Web Security Project, se trata de uma comunidade de segunrança que disponibiliza diversas coisas e metodologias para pentests. TOP 10: Se trata de um projeto da woasp para informar as dez falhas mais comuns da web, e são elas:
+
+1° Injection -> Essa falha pode envolver desde SQL, Comandos, Comandos de OS e etc.
+QUANDO UMA APLICAÇÃO FICA VULNERAVEL A INJEÇÃO?
+
+· Os dados fornecidos pelo usuario não são validados, filtrados ou sanitizados pelo aplicativo
+
+· Consultas dinamicas ou chamadas não parametrizadas são usadas diretamente interpretador (SQL, Command, LDPA).
+
+· Utilização de dados enviados pelo usuario diretamente ou concatenados
+
+EXEMPLOS: SQLI
+° Uma aplicação usa um valor inseguro enviado  pelo usuario diretamente no código SQL e isso deixa a aplicação vulneravel:
+
+    $query = "select * from noticias where id=".$_['id'];
+
+Uma atacante pode manipular o parametro 'id' no navegador e enviar para o backend, exemplo: -1 or 1=1# e isso mudará o comportamento do site.
+-----------------------------------
+
+2° Broken Authentication -> A confirmação da indentidade do usuario, autenticação e gerenciamento de sessão são essenciais para proteção contra ataques relacionados a autenticação. Uma aplicação pode estar vulneravel, se: 
+
+· Permite ataques automatizados, como preenchimento de credenciais, onde o invasor tem uma lista de nomes de usuarios e senhas válidos.
+
+· Permite força bruta ou outros ataques automatizados.
+
+· Permite senhas padrão, fracas ou conhecidas, como "qwerty" ou "admin/admin"
+
+. Usa recuperação de credencial fraca ou ineficaz e processos de "esqueci a senha"
+
+· Usa senhas em clear/text, criptografadas com hash fraco.
+
+· Não invalida adequadamente os IDs de sessão.
+
+EXEMPLOS:
+° Credential stuff, usando uma lista de senhas conhecidas para fazer brute force é bem comum, e se a aplicação não possui um mecanismo de proteção contra automações (account lockout/rate limit), fica ainda mais simples.
+
+° Weak credencial (admin/admin, tomcat/tomcat)
+
+° Controle de timeout de sessão inválido (utilização de um computador publico)
+-----------------------------------
+
+3° Sensistive Data Exposure -> A primeira coisa é determinar as necessidades de proteção dos dados em trânsito e em repouso. Por exemplo, senhas, números de cartão de credito, registros de saude, informações pessoais e segredos comerciais exigem proteção extra, especialmente se esses dados se enquadram nas leis de privacidade (LGPD, GDPR), uma aplicação está vulneravel, quando:
+
+· Transmite dados em clear/text ou utiliza protocolos sem criptografia como: HTTP, SMTP, FTP
+
+· Weak Cryptograpchic (criptografia utilizada fraca ou antiga)
+
+. A solicitação do usuario utilizando algum cliente (browser, aplicativo, cliente de email) não verifica se o certificado do servidor é valido
+
+EXEMPLO:
+
+° Uma aplicativo criptografa números de cartão de crédito em um banco de dados usando criptografia automatica de banco de dados. No entanto, esses dados são descriptografados automaticamente quando recuperados, permitindo que uma falha de SQL injection recupere números de cartão de credito em texto não criptografados.
+
+° O banco de dados usa hashes sem salt para armazenar senhas. Com isso um atacante tendo acesso ao banco de dados poderá ter acesso as senhas com "md5" ou clear/text, hashes gerados por funções de hash simples podem ser quebrados por GPUs.
+-----------------------------------
+
+4° XML External Entities (XXE) -> Aplicativos em particular, serviços da web baseados em XML ou integrações (SOAP, SAML) podem ser vulneraveis a ataques se:
+
+· O aplicativo aceita XML diretamente ou uploads de XML, especialmente de fontes não confiaveis, ou insere dados não confiaveis em documentos XML, que são analisados por um processador XML.
+
+· Qualquer um dos processadores XML no aplicativo ou serviços da Web baseados em SOAP possuem definições de tipo de documento (DTDs) habilitadas.
+
+· Se o aplicativo usa SAML para processamento de identitade dentro da segurança federada ou para fins de logon único (SSO), o SAML usa XML para asserções de identidade e pode ser vulneravel.
+
+· Se o aplicativo usa SOAP anterior a versão 1.2, é provavel que seja sucestivel a ataques XXE se entidades XML estiverem sendo passadas para a estrutura SOAP.
+
+EXEMPLO: Um atacante pode manipular um XML e criar uma entidade externa para ler arquivos dentro do servidor, como:
+
+	<?xml version="1.0" encoding="ISO-8859-1"?>
+	<!DOCTYPE crowsec [
+	<?ELEMENT root any >
+	<!ENTITY entidade SYSTEM "file:///etc/passwd" >]>
+	<root>&entidade;</root>
+-----------------------------------
+
+5° Broken Access Control -> O controle de acesso impõe uma ACL de modo que os usuarios não possam agir fora das suas permissões. As falhas normalmente levam à acesso não autorizado de informações, modificação ou destruição de dados. Vulnerabilidades comuns de BAC incluem:
+
+· Bypass de ACL modificando a URL, o estado interno do aplicativo ou a página HTML ou simplesmente usando uma ferramenta de ataque de API personalizada (postman e etc)
+
+· Permitir que a chave primaria (PK) seja alterada para o registro de usuario de outra pessoa, permitindo a visualização ou edição da conta de outra pessoa.
+
+· Elevação de privilegios, atuar como um usuario sem estar logado, ou agir como um administrador quando logado como um usuario.
+
+· Manipulação de metadados, como reproduzir ou adulterar um token de controle de acesso Json Web token (JWT) ou um cookie ou campo oculto manipulado para elevar os privilegios ou abusar da invalidação JWT (None Algorithm Attack)
+
+EXEMPLO: 
+
+° Um atacante pode simplesmente forçar a navegação para URLs de destino. Onde direitos de administrador são necessários para acessar a página de administrador, por exemplo:
+
+	http://site.com.br/user/me (informações do usuario atual)
+	http://site.com.br/users (lista de usuarios)
+	
+Se um usuario não autenticado pode acessar qualquer página, é uma falha.
+
+Se um usuario não administrador pode acessar a página de administração, isso é uma falha.
+
+° Insecure direct object references (IDOR) 
+
+	http://site.com.br/post/1 (publicação do meu usuario)
+	http://site.com.br/post/2 (publicação de outro usuario)
+	
+Ao conseguir acesso a publicações ou quaisquer informações de outros usuarios a aplicação possui uma falha de IDOR.
+
+JWT = Json Web Tokens se trata de uma forma mais segura de se fazer um controle de sessão e armazenar dados de usuarios, armazenados em cookies ou em tokens para se comunicar com o backend.  O json contém tres partes, o header que é onde informamos o tipo de criptografia que iremos usar, a payload que é onde contém as informações e a singnature, que é a assinatura e é onde ocorre a vulnerabilidade. 
+-----------------------------------
+
+6° Security misconfiguration -> O aplicativo é vulneravel se:
+
+· Falta de proteção de segurança apropriada em qualquer parte da stack de aplicativos ou permissões configuradas incorretamente em serviços em nuvem (s3, elastic beanstalk, azure blobs).
+
+· Recursos desnecessários são ativados ou instalados (por exemplo, portas, serviços, páginas ou privilegios desnecessários).
+
+· Contas padrão e suas senhas ainda ativadas e inalteradas (tipo tomcat/tomcat).
+
+· O tratamento de erros revela dados da stack ou outras mensagens de erro excessivamente informtivas aos usuarios.
+
+EXEMPLOS:
+
+° A configuração do servidor permite mensagens de erro detalhadas, por exemplo rastreamentos da stack. Isso potencialmente expõe informações confidenciais ou falhas subjacentes, como versões de componentes que são conhecidas por serem vulneraveis.
+
+Um exemplo clássico são frameworks como Laravel, Django e etc, quando estão com o modo debug habilitado exibem várias informações desde chaves de criptografia à dados de acesso a banco de dados e outros.
+-----------------------------------
+
+7° Cross-site-scripting (XSS) -> Existem tres formas de XSS, geralmente direcionadas aos navegadores dos usuarios:
+
+° XSS Reflected: O aplicativo ou API inclui uma entrada de usuario não validada e sem escape como parte da saida HTML. Um ataque bem-sucedido pode permitir que o invasor execute HTML e Javascritp arbitrários no navegador da vitima.
+
+° XSS Stored: O aplicativo ou API armazena entradas de usuarios não sanitizadas que são visualizadas posteriormente por outro usuario ou administrador. O XSS stored geralmente é considerado um risco alto ou critico.
+
+° DOM XSS: Estruturas Javascript, aplicativos PWA e APIs que incluem dinamicamente dados enviados por invasores em uma página, são vulneraveis a DOM XSS
+
+EXEMPLOS:
+
+° Um atacante pode manipular o parametro nome e injetar códigos HTML e Javascript
+
+	 <?php 
+	 $nome = $GET_['nome'];
+	 $mensagem = "Olá <b>{$nome}</>;
+
+Um atacante pode criar uma URL maliciosa para redirecionar usuarios para sites de phishing, malwares ou até roubar dados do usuario como cookies.
+-----------------------------------
+
+8° Insecure Deserialization -> Aplicativos e APIs ficarão vulneraveis se desserializarem objetos adulterados por um atacante. Isso pode resultar em dois tipos principais de ataques:
+
+· Ataques relacionados a objetos e estruturas de dados em que o atacante modifica a lógica do aplicativo ou atinge a execução remota de código se houver classes disponiveis para o aplicativo que podem alterar o comportamento durante ou após a desserialização
+
+· Ataques tipicos de violação de dados, como ataques relacionados ao controle de acesso, em que as estruturas de dados existentes são usadas, mas o conteudo é alterado. (algo como um BAC porem usando deserialização insegura)
+
+*** Serialização é o processo de transformar um objeto e transformar-lo em binário para facilitar o armazenamento dele em banco de dados, arquivos ou até no proprio navegador. Deserialização é o processo contrario a esse. ***
+
+EXEMPLOS: 
+
+° Um forum PHP usa serialização de objetos PHP para salvar um "super' cookie, contendo ID do usuario, função, hash de senha e outros:
+
+° Um invasor pode alterar o objeto serializado para conceder a si mesmo privilegios de administrador
+-----------------------------------
+
+9° Using Components with known vulnerabilities -> O aplicativo é vulneravel se:
+
+· Se você não souber as versões de todos os componentes que usa (tanto do lado do cliente quanto do lado do servidor). Isso inclui componentes que você usa diretamente, bem como dependencias aninhadas.
+
+· Se o software for vulneravel, sem suporte ou desatualizado. Isso inclui o sistema operacional, servidor web/aplicativo, sistema de gerenciamento de banco de dados (DBMS), aplicativos, APIs e todos os componentes, ambientes de tempo de execução e bibiliotecas. 
+
+· Se os desenvolvedores de software não testarem a compatibilidade de bibliotecas atualizadas, atualizadas ou com patches.
+
+-----------------------------------
+
+10° Insufficient loggin e Monitoring -> O aplicativo é vulneravel se:
+
+· Eventos auditáveis, como logins, logins com  falhas e transações "high volume" não são registrados.
+
+· Avisos e erros geram mensagens e log inadequados ou pouco claras.
+
+· Logs de aplicativos e APIs não são monitorados para atividades suspeitas.
+
+· Os logs são armazenados apenas localmente.
+
+· O teste de penetração e varreduras por ferramentas DAST (com WOASP ZAP) não acionam alertas.
+
+· O aplicativo não é capaz de detectar, escalar ou alertar para ataques ativos em tempo real ou quase real.
+-----------------------------------------------------------------------------------
+       			 OWASP ZED ATTACK PROXY
+                         

@@ -1,0 +1,28 @@
+WEBSHELL (WEBDAV) O QUE É? -> Basicamente uma web shell é uma forma de se executar algum código dentro do servidor, que irá executar algum comando dentro do sistema operacional do servidor, esse shells podem ser em diversas linguagens, mas o webshell tem que ser na mesma linguagem que o servidor executa, por exemplo, se a aplicação for em java, deveremos utilizar uma shell em java, se a aplicação for em php, devemos utilizar uma shell php e por ai vai. Uma shell é utilizada para a partir do nosso navegador conseguir executar comandos dentro do sistema operacional.
+-----------------------------------------------------------------------------------
+ WEB SHELL EM PHP -> No php temos diversos comandos utilizados para fazermos com que a linguagem execute comandos no sistema operacional, uma delas é a função system, que serve para passarmos e executarmos comandos ao sistema operacional, outra função que podemos utilizar também é a função passthru que também executa comandos no sistema operacional. Também temos a função shell_exec porém ao contrario das duas outras, ela não nos dá o retorno na tela, e para obtermos a resposta do comando devemos passar a função dentro de uma váriavel.
+
+EXEMPLOS:
+
+<?php
+system("id");
+
+passthru("id");
+
+$output =shell_exec("id");
+echo $output;
+
+?>
+
+Uma webshell consiste basicamente em criar um script, onde eu consiga enviar ele ao servidor e executar comandos remotamente somente a partir do navegador. Dessa forma podemos utilizar parametros http para executar funções dentro do servidor. Como por exemplo:
+
+<?php 
+
+system($_GET['cmd']);
+?>
+
+Dessa forma podemos passar comandos para o servidor utilizando o parametro ?cmd=~comando a ser executado~.
+-----------------------------------------------------------------------------------
+LABORATORIO DESSA AULA -> Para resolvermos o laboratorio dessa aula, devemos explorar uma vulnerabilidade em webdav (um protocolo bem antigo) e esse protocolo permite gerenciamento de arquivos remotamente. Ao fazermos um fuzzing no endereço do lab, obtivemos um status code 401 para um /webdav/index.html, também obtivemos um 401 para /webdav/ e um 401 para /webdav/servlet/web.
+
+Ao tentarmos acessar alguns desses endereços, a aplicação nos pediu uma senha para fazermos login, porém como não temos, podemos pesquisar se essa tecnologia contém um usuario e senha padrão para tentarmos logar. Ao pequisarmos encontramos o login, webdav/webdav que é um dos logins padrões, agora utilizaremos uma ferramenta chamada cadaver para interagirmos com o webdav via linha de comando. Sua sintaxe básica de uso é: cadaver http://ip/webdav. Para fazermos upload da nossa shell para o servidor remoto utilizando o webdav, devemos utilizar a seguinte sintaxe: put /home/garridex11/shell.php e dar enter, dessa forma podemos utilizar da nossa shell para navegar pelo sistema operacional do servidor e conseguir a nossa flag para completar o laboratorio.

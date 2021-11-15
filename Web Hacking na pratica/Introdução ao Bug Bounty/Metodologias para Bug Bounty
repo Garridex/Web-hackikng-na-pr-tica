@@ -1,0 +1,37 @@
+A metodologia é parecida com a do pentest, porém sem alguns passos que contém no Pentest. Os passos são os seguintes:
+
+1° Recon -> A parte mais importante é o reconhecimento, é nele que devemos dedicar a maior parte do nosso tempo. Subdominios, IPS, tecnologias, tudo isso é muito necessário para obtermos informações da aplicação
+
+2° Identificação e analise -> Essa parte se trata do processo de identificação e analise de tudo que encontramos. Podemos utilizar ferramentas para obtermos o parametro necessario para termos aquela vulnerabilidade, dessa forma podemos filtrar os hosts e diminuir o nosso escopo
+
+3° Exploração e PoC -> POC é mandar a URL e explicar o que ela está fazendo, é relativamente simples, porém precisamos especificar bem a forma para a pessoa que for fazer o teste do outro lado conseguir reproduzir a vulnerabilidade.
+
+4° Report -> Essa é a parte de construção do relatorio, no bugbounty, não temos tanta preocupação em criar nosso relatorio, podemos analisar modelos já feitos nas proprias plataformas de bugbounty.
+-----------------------------------------------------------------------------------
+				    RECON
+				     
+SCOPE E OUT OF SCOP -> Indentificar dominios e endereços IPS que estão no escopo dos testes. Por exemplo:
+
+	*starlink.com
+	*starlinksp.com
+	2620:134:b000::/40
+	192.31.243.0./26
+	
+SUBDOMAIN DISCOVERY -> Processo para identificar subdominios dentro de dominios, você pode utilizar várias técnicas para este processo. Exemplo:
+
+	sea-cgnat-158.starlinksp.net
+	vpnserver.starlinksp.net
+	
+CONTENT DISCOVERY -> Processo de indentificar informações e dados que podem ser interessantes dentro do processo de indentificação e analise de vulnerabilidades. Exemplo:
+
+https://www.starlink.com/enviroment.js (arquivo js com informações sobre o ambiente e chaves de API).
+
+APPLICATION DISCOVERY -> Este é um ponto que é utilizado para identificar se o seu alvo está utilizando alguma ferramenta ou software de terceiro, esta etapa pode ser bem interessante, onde sempre há possibilidades de existir vulnerabilidades netes softwares terceiros e o seu alvo ainda não ter atualizado o software.
+-----------------------------------------------------------------------------------
+                          ANALISE E EXPLORAÇÃO
+                          
+FILTRO E VALIDAÇÃO -> Identificar se o seu alvo está rodando o servidor HTTP, por exemplo. Você pode utilizar algumas ferramentas para auxiliar nos teste, como HTTPX
+
+VULNERABILITY ASSESSMENT -> Processo para identificar vulnerabilidades nos ativos, quando estamos falando de Bug Bounty normalmente este é um processo manual. Você pode utilizar o WSTG da OWASP neste passo, por exemplo
+
+VALIDAÇÃO E POC -> Falando do cenário de Bug Bounty o processo na maioria das vezes se encerra com a validação da vulnearbilidade e sua existencai com um PoC

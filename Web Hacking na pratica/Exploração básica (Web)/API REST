@@ -1,0 +1,168 @@
+API REST COMO FUNCIONA E O QUE PRECISAMOS OLHAR QUANDO UMA APLICAÇÃO FOI CONSTRUIDA EM CIMA DISSO -> APIs são largamente utilzadas para fazer integração entre sistemas e também é largamente utilzada em aplicações web e em sistemas movéis.
+
+O modelo mais comum hoje em dia é uma aplicação SPA, single page aplication, a qual temos um layout fixo, e ao invés de recarregarmos toda a página ou redirecionar o usuario para uma página nova, apenas o conteudo principal é atualizado de forma assicrona, mantendo toda a estrutura da página estática. As comunicações com o back-end então ocorrem através de APIs.
+
+É bem comum nessa também em aplicativos moveis, que somente o front fica no celular e o resto fica todo em um servidor com o qual o aplicativo faz chamadas de API para se comunicar.
+
+° AS PRINCIPAIS VULNERABILIDADES EM APIS SÃO: 
+
+· Falhas de autorização: Nem sempre o sistema de autorização é corretamente configurado
+
+· Falhas de autenticação: Conseguimos fazer requisições para end-point que normalmente não teriamos autorização sem ter acesso a autenticação ou crendencial.
+
+· Falha de autorização: Falha onde conseguimos ver uma informação onde não deveriamos poder ver
+
+Uma das vulnerabilidades mais comuns em API que podemos triggar talvez seja um IDOR, conseguir ler informações de outros usuarios, trocar o ID do usuario e pegar informações de outros usuarios sem ter feito login.
+-----------------------------------------------------------------------------------
+CONCEITO DE API REST -> Normalmente temos um dispositivo movel ou uma aplicação web conectados a APIs que ficam responsaveis por intermediar o acesso ao banco de dados, ou a serviços de terceiros. Temos por exemplo uma aplicação que precisa dispara um email, ao invés de a aplicação falar pra disparar o email direto pela aplicação web, podemos utilizar uma api para disparo de emails tal como o mailgun. Para fazer isso, podemos simplesmente chamar a api do mailgun e ele já irá ficar responsavel por enviar os emails, como por exemplo:
+
+curl -s --user 'api:YOUR_API_KEY' \
+    https://api.mailgun.net/v3/YOUR_DOMAIN_NAME/messages \
+    -F from='Excited User <mailgun@YOUR_DOMAIN_NAME>' \
+    -F to=YOU@YOUR_DOMAIN_NAME \
+    -F to=bar@example.com \
+    -F subject='Hello' \
+    -F text='Testing some Mailgun awesomeness!'
+
+Dessa forma podemos utilizar a API do mailgun para disparar o email. Ao invés de um site, que pode ser inseguro, pois deveriamos disponibilizar a API para o front-end podemos fazer com que o navegador envie uma requisição para a API dizendo qual mensagem e pra quem ele quer mandar o email e o backend faz a comunicação com a API.
+
+A mesma coisa funciona para um banco de dados, por que o usuario não precisa acessar diretamente o banco de dados, isso não é viavel pois eu teria que deixar a senha de acesso dentro da aplicação o que não é seguro, nesse caso por isso que temos alguem intermediando o acesso, tal como o servidor ou uma API.
+
+Uma API REST tem um padrão de organização e métodos utilizados para a chamada e API. Para fazermos o CRUD, uma API REST utiliza os seguintes métodos:
+
+CREATE -> POST: Utilizado para criar
+
+READ -> GET: Utilizado para ler
+
+UPDATE -> PUT: Utilizado para alterar ou atualizar
+
+DELETE -> DELETE: Utilizado para deletar
+
+Lembrando que os métodos são métodos HTTP, ou seja, são do protocolo de rede e não das APIs.
+
+Também temos a estruturação de API, utilizamos estruturamento para passarmos os parametros, e se parece mais ou menos com isso daqui:
+
+/user - GET/POST (pegar todos os usuarios, criar um novo usuario)
+
+/user/1 - GET/PUT (pegar um usuario X, ou atualizar usuario X)
+
+/user/1/resetpassword - GET/POST (pedir para trocar a senha do usuario)
+
+/user/1/resetpassword/12345 (GET, atualizar a senha no banco de dados)
+
+
+OUTRO EXEMPLO:
+
+· Criar uma tarefa POST /tarefa
+
+· Deletar uma tarefa existente DELETE /tarefa/{id}
+
+· Ver uma tarefa especifica GET /tarefa/{id}
+
+· Procurar por tarefas GET /tarefa
+
+· Atualizar uma tarefa existente PUT /tarefa/{id}
+
+Dessa forma, mesmo que utilize a mesma URL, são métodos HTTPS diferentes, então o que a API reconhece é o método, não somente a URL. Basicamente é assim que funciona uma API REST.
+---------------------------------------------------------------------------------
+COMO IDENTIFICAR E EXPLORAR UMA VULNERABILIDADE EM APIs? ->  Ao tentarmos fazer login na página do laboratorio, ela nem atualiza, isso já é um sinal de estarmos lidando com uma API, ou seja, se trata de uma aplicação onde não há requisições de acesso diretas ao servidor, somente requisições feitas por apis.
+
+para analisarmos uma API é necessário primeiro analisarmos o seus endpoints e descobrirmos como está sendo feito a sua requisição, utilizei um proxy para ver como estava sendo feito a requisição e está utilzando o seguinte cabeçalho:
+
+
+POST /api/login HTTP/1.1
+Host: 10.10.0.39
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0
+Accept: */*
+Accept-Language: pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3
+Accept-Encoding: gzip, deflate
+Content-Type: application/json; charset=utf-8
+X-Requested-With: XMLHttpRequest
+Content-Length: 54
+Origin: http://10.10.0.39
+Connection: close
+Referer: http://10.10.0.39/login
+Cookie: PHPSESSID=52pj57v3ep9s9fc3sgfs7qmf56
+
+{"email":"teste@testedovitor.com","password":"teste"}
+
+
+A aplicação faz a requisição com um json em código aberto, ou seja, nada de criptografia por aqui. (Por si só isso já é uma vulnerabildade a se reportar).
+
+· O que fazer quando não temos acesso as rotas das APIs? -> Podemos fazer um fuzzing para tentarmos descobrir os endpoints, também podemos analiasar o comportamento da aplicação, em algum momento a aplicação sabe que para ir para  endpoint de API, ele precisa no código da aplicação, dizer que está indo para aquele ponto da API, e muitas vezes no próprio código da aplicação tem o endpoint para ir. No caso desse lab, temos esse código js para analisarmos 
+
+if($email && $password){
+                    data = {'email': $email, 'password': $password}
+                    headers = {'Content-Type': 'application/json'}
+
+                    $.post("/api/login", data=JSON.stringify(data), function(data){
+                        if(data.status == 200){
+                            $("#result_error").html("");
+                            $("#result").html("Login e senha correto, Você será redirecionado!");
+                            setTimeout(function(){
+                                document.location = "/";
+                            }, 1000);
+                        }
+                        
+Esse código verifica se os emails e senhas são compativeis com os do back-end, porém o código nos entraga uma das rotas da API que é essa parte:
+
+$.post("/api/login", data=JSON.stringify(data), function(data){
+                        if(data.status == 200){
+                        
+Que está dando um post para /api/login.
+
+Porém, se não encontrarmos nada no codigo visivel da aplicação, podemos procurar na aplicação se ela contém códigos minify, e verificar nele se tem as rotas de apis ou algo importante.
+
+Ao final do código desse laboratorio, temos um outro código que a aplicação importa, esse está no formato minify, isso é um código com todos os espaços, identação e removidos, dessa forma ficando mais dificil de se ler, porém mais rápido para ser executado, esse processo também remove comentarios, delimitadores de código e etc. Esse tipo de código é mais dificil de ler, por isso podemos utilizar uma extensão chamada de JS beutifier, ela faz o processo reverso do minify (somente compativel com firefox).
+
+Mesmo removendo o minify, esse código é cheio de coisas e bem complexo, então temos alguns macetes para encontrarmos os parametros a serem vasculhados, como por exemplo:
+
+· graphql
+
+· api
+
+· TOKEN
+
+· JWT
+
+· SECRET
+
+Ao pesquisarmos encontramos o seguinte código:
+
+			var BASEURL_API = "/api/"
+
+Então já sabemos que a base de URL da nossa api da aplicação é essa. Esse levantamento é importante para analisarmos outros endpoints da aplicação.
+
+Ao lermos o código-fonte, obtivemos algumas funções, como é uma função js, podemos tentar usar o console do navegador para charmamos ela e ver se é possivel. 
+
+Ao tentarmos percebemos que não é possivel, porém a requisição é enviada ao servidor, isso significa que podemos fazer uma requisição para a API sem estarmos autenticados, e como os jsons não estão criptografados, podemos ver os dados trafegados.
+
+Na aplicação existem a função chamada de getProduct(), nela podemos passar um parametro para tentarmos como por exemplo getProducts(1) e vermos a resposta do servidor. Ao fazermos isso, a aplicação responde como um undefined, porem faz a resquisição para a API que nos retorna os dados.
+
+Fazer a requisição via console funciona na API mais ou menos da seguinte maneira:
+
+/api/product -> Pega todos os produtos -> getProducts
+
+/api/product/1 -> Apenas produto com ID 1 -> getProducts(1)
+
+/api/user/1 -> Apenas usuarios com o ID 1 getUsers(1)
+
+Nesse caso dessa api está faltando uma rota, se chamarmamos /api/products ele volta todos os produtos, logo chamar /api/user deve retornar todos os usuarios.
+
+Para fazermos isso podemos editar e reenviar uma solicitação que já haviamos feito no navegador, as solicitações feitas através do console, fazendo isso essa foi nossa resposta obtida:	Object { id: "1b7b6cd6-78b8-4c88-9615-6901337beacf", email: "admin@crowsec.com.br", username: "admin", … }
+id	"1b7b6cd6-78b8-4c88-9615-6901337beacf"
+email	"admin@crowsec.com.br"
+username	"admin"
+role	"superadmin"
+1	Object { id: "46178e7c-a09a-46fe-a977-be4643213de5", email: "guest@crowsec.com.br", username: "guest", … }
+id	"46178e7c-a09a-46fe-a977-be4643213de5"
+email	"guest@crowsec.com.br"
+username	"guest"
+role	"guest"
+2	Object { id: "76046bb5-d565-4a8f-9854-770c3e773976", email: "carlos@crowsec.com.br", username: "carlos", … }
+id	"76046bb5-d565-4a8f-9854-770c3e773976"
+email	"carlos@crowsec.com.br"
+username	"carlos"
+role	"cs{3xpl01t1ng_R3st_Ap1}"
+
+O que podemos perceber é que a rota da api não tinha retornado pois o id é um número aleatorio. Outra coisa é que essa é uma falha na arquitetura da API, ou seja, uma falha na construção da API.

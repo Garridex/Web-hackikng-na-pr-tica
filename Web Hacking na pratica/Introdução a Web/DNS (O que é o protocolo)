@@ -1,0 +1,13 @@
+                             DOMAIN NAME SYSTEM
+                         
+DNS nada mais é que o registro que trasnforma letras em endereços IPs, conseguimos ver por exemplo a seguinte entrada: www.crowsec.com.br após passar no DNS, o retorno dessa entrada será 172.67.175.33.
+Hoje em dia, o DNS é o que faz a internet funcionar, a criação dele foi feita para facilitar o acesso ao sites e sistemas online, feita para não precisarmos inserir diretamente o endereço Ip diretamente no navegador.
+-----------------------------------------------------------------------------------
+COMO FUNCIONA UM DOMINIO -> O dominio é dividido em algumas partes, temos o seguinte dominio de exemplo:
+
+			 www.crowsec.com.br
+A resolução de DNS começa de trás pra frente, ela resolve primeiro o TLD (top level domain) depois resolve o dominio e depois disso o subdominio. No nosso exemplo o TLD é .com.br, nosso dominio é crowsec e o nosso subdominio é www.
+
+O fluxo de resolução DNS se concentra em oito etapas. A primeira parte da execução do fluxo é a requisição do nosso computador até o nosso servidor DNS local (no nosso caso é o roteador). O servidor local faz uma requsição até o Root server (servidores espalhados pelo mundo que são resposaveis pelo TLD), O Root server aponta qual o servidor que o nosso TLD está requisitando ao nosso servidor local, O servidor local faz a requisição ao TLD responsavel pelo nosso pais (.com.br = Brasil). O nosso servidor local faz a requisição ao servidor DNS autoritativo responsavel por www.crowsec.com.br, o servidor vai responder e o nosso DNS local responde ao computador para acessarmos o site.
+
+O fluxo de resolução acontece somente uma vez, após o segundo acesso, o nosso servidor local mantém em cache o site, dessa forma não precisa fazer a consulta toda novamente, somente pegar o endereço do nosso servidor interno. Podemos alterar a consulta DNS para fazermos num servidor externo, dessa forma, ao invés de resolver no nosso roteador, a solicitação irá para um resolver que contém muito cache, assim há grandes possibilidades de o site que quisermos acessar já estar em cache direto do servidor.

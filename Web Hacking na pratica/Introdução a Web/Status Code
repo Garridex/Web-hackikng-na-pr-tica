@@ -1,0 +1,9 @@
+HTTP STATUS CODE -> Os status code vão de 200 até 599, existem alguns abaixos, porém são raros e são somente de informações. Status code é a resposta que o servidor nos dá para todas os requests que fazemos. Os status code são:
+
+200-299 -> Sucesso
+
+300-399 -> Redirecionamento
+
+400-499 -> Erros do lado do cliente
+
+500-599 -> Erros no lado do servidor

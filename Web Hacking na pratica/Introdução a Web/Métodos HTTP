@@ -1,0 +1,11 @@
+O responsavel por conectar o Backend com o frontend é o protocolo HTTP e para isso ele utiliza alguns métodos e são eles:
+
+GET -> Ler dados do servidor
+
+POST -> Enviar dados para o servidor, fazer uploads, enviar um formulario
+
+PUT -> Enviar dados para o servidor (criar/atualizar)
+
+DELETE -> Deletar dados do servidor
+
+PATCH -> Atualizar dados no servidor

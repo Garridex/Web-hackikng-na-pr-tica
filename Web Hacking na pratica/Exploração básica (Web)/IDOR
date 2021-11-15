@@ -1,0 +1,38 @@
+IDOR O QUE É E COMO OCORRE ESSA VULNERABILIDADE? -> IDOR é um acronimo para insecure direct object reference (referencia insegura direta ao objeto). Essa vulnerabilidade ocorre quando um usuario consegue ler ou adulterar informações de outros usuarios, também se enquadra poder fazer coisas que somente seu usuario poderia fazer, como por exemplo:
+
+Temos uma página de login no seguinte endereço https://site.com.br/login e ao acessar a plataforma ele redireciona para a seguinte url https://site.com.br/usuario?id=100 passando um parametro que é o id do usuario logado, nessa caso é o 100. Ao na página redirecionada temos uma mensagem de bem vindo com nosso nome e informações do usuario. Quando outra pessoa loga na plataforma, ocorre a mesma coisa somente alterando os dados retornados e o nome do usuario.
+
+O IDOR ocorre quando alteramos algum parametro na aplicação e podemos ter acesso a outros usuarios daquele serviço, temos um exemplo também de uma aplicação de notas, que a url é a seguinte: https://notas/usuario?id=1 e ao alterarmos o id do usuario, podemos ter acesso as notas de outros usuarios da plataforma, sem precisar fazer login, sem precisar de verificação e nem nada, isso se caracteriza como um IDOR. O IDOR é sempre testar parametros que estão referenciados ao seu usuario, toda que entrar em uma plataforma tentar trocar um parametro para ver se podemos ver as informações de outros usuarios. Outro exemplo é quando temos uma conta num site, e esse site nos permite trocar nossas informações de login no seguinte endereço: 
+
+https://site.com.br/redefinir-senha?emailteste@teste.com.br&token=saidfiosfssajfo
+
+então ele passa uma url com o email e um token para trocarmos a senha, na aplicação tem uma local para pormos a senha nova do usuario, e nesse caso o idor ocorre quando clicamos para redefinir nossa senha e podemos alterar o email para um email de outra pessoa que conhecemos e a aplicação permitir essa troca de senhas sem validar da onde vem a solicitação de troca. Isso também se caracteriza um IDOR só que com Acount Take Over, que é uma forma de roubar a conta do usuario.
+-----------------------------------------------------------------------------------COMO IDENTIFICAR E EXPLORAR ESSA VULNERABILIDADE? -> Para podermos identificar uma vulnerabilidade de IDOR, devemos analisar primeiro a funcionalidade e o contexto da aplicação, onde uma vulnerabilidade dessa ocorreria dentro da aplicação que estamos testando, seja uma redefinição de email com parametros passando via get ou post com a aplicação aceitando um valor alterado desse parametro, seja uma página de login contendo um parametro númerico e após encontrarmos algum lugar que tem esse contexto podemos testar primeiro os parametros da aplicação alterando seus números ou letras para ver se conseguimos algo, podemos analisar as requisições pelo burp também para tentarmos alterar algumas delas. No contexto de email, ou de contas, devemos tentar alterar os parametros que inserimos para algum outro email ou usuario que estamos tentando comprometer.
+
+No contexto de uma página contendo o parametro ID que talvez precisamos fazer fuzzing, podemos utilizar o burp suite para isso, utilizando o intruder para fazermos um ataque com diversos números. Também podemos utilzar o wffuz para fazermos o fuzzing também e nesse exemplo utilizaremos ele.
+
+Para utilizarmos o wffuz é muito simples, o comando é o seguinte: 
+
+	wfuzz -c -z range,1-100 http://10.10.0.23/?action=home&admin_id=FUZZ
+
+Porém, o que precisamos nos atentar é que devemos passar o nosso cookie de autenticação do usuario, ou seja, devemos mandar o cookie de sessão para não sermos barrados na requisição. Para fazermos isso, podemos utilzar o parametro -H do wfuzz para passarmos um cabeçalho junto com as payloads, então dessa forma podemos passar nosso cookie session id para o wfuzz, isso é necessário por que a página necessitava de estarmos autenticados ou logados na aplicação.
+
+wfuzz -c -z range,1-100 -H "Cookie:PHPSESSID=agu87fjvrhoil9u1gcnjndaasl" --hh 2968 http://10.10.0.23/?action=home&user_id=FUZZ
+
+Dessa forma podemos encontrar o usuario que continha a flag, o usuario de número 54 e assim completamos esse desafio de IDOR.
+
+Essa vulnerabilidade pode ser bem interessante se encontrarmos ela, pois nos permite uma serie de coisas.
+-----------------------------------------------------------------------------------
+CONSIDERAÇÕES FINAIS -> Existem vários tipos de ataques IDOR, incluindo:
+
+° Body manipulation: No qual invasores modificam o valor de uma caixa de seleção, botões de opções, APIs e campos de formulários para acessar informações de outros usuarios com facilidade.
+
+° Adulteração de URL: Em que a URL é modificada no final do cliente ajustando os parametros na solicitação HTTP.
+
+° Solicitações HTTP: nas quais as vulnerabildades do IDOR são normalmente encontradas nos verbos GET, POST, PUT e DELETE.
+
+° Atribuições em massa: em que um padrão de registro pode ser usado para modificar dados que o usuario não deve ser capaz de acessar. Embora nem sempre seja resultado de vulnerabilidades do IDOR, há muitos exemplos poderosos de que isso seja o resultado.
+
+Em sua forma mais simples, um IDOR surge quando a única entrada necessária para acessar ou subsitituir o conteudo é do usuário.
+
+SE ELAS SÃO TÃO SIMPLES, POR QUE TÃO COMUNS? -> Resumindo, os IDORS não podem ser detectados apenar por ferramentas. Os IDORS exigem criatividade e testes manuais de segurança para identificá-los. Embora alguns scanners possam detectar atividades, é necessário um olho humano para analisar, avaliar e interpretar. Em pentests tradicionais, a menos que um pentester teste todos os parametros possiveis em cada endopoint de solicitação, essas vulnerabilidades podem passar despercebidas.

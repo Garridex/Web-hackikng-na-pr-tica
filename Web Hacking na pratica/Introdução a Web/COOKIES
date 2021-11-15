@@ -1,0 +1,27 @@
+                              Tipos de cookies
+Normalmente quando acessamos algum site e ele quer monitorar o nosso acesso dentro do site, ele nos fornece um cookie do navegador. Um cookie é utilizado para identificar e armazenar dados de visitantes nos sites e sistemas Web. São divididos em três categorias:
+
+° Cookie de sessão -> É valido somente enquanto o usuario está acessando o site, imagina que acessamos o site e ele consegue gravar um cookie no navegador enquanto acessamos ele. Se fecharmos o site e abrirmos novamente o cookie não estará mais salvo no navegador, toda vez que fecharmos o site ele deixa de existir
+
+° Cookie persistentes -> Esse cookie mesmo fechando o navegador ele continuará lá, temos esse cenario no facebook por exemplo. Podemos reiniciar o computador que o cookie continuará lá e a conta continuará logado
+
+° Cookies de terceiros -> O cookie de terceiro é basicamente um cookie contendo um script que grava um cookie de outras páginas. Por exemplo o Google Analitics, que funciona setando um cookie no navegador para fazer track no nosso site. É a possibilidade de um cookie de outro site fazer parte de uma aplicação.
+-----------------------------------------------------------------------------------
+                              PROPRIEDADES
+                              
+Name -> Nome do cookie
+
+Value -> Valor do cookie, tal como um Hash ou alguma informação
+
+Path -> Onde no site teremos controle e o cookie terá acesso
+
+Domain -> Especificação por qual o dominio responsavel pelo cookie, qual dominio pode ler e usar aquele cookie
+
+Expires -> Quando o cookie irá expirar, uma hora, cinco minutos e etc...
+
+http-only -> Somente pode ser manipulado via HTTP, o javascript por exemplo não conseguirá manipular o cookie. O valor é boolean, ou seja 1 ou 0. Se estiver setado como verdadeiro somente o servidor poderá manipular o cookie
+
+secure -> Diz que o cookie só irá funcionar quando existir uma conexão HTTPS, também se trata de um valor booleano
+
+samesite -> Diz que o cookie só pode ser acessado e utilizado pelo site que o criou, existem tres tipos e sendo eles Lax, Strict e None
+-----------------------------------------------------------------------------------

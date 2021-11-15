@@ -1,0 +1,44 @@
+                                 ENTRADAS DNS
+  
+O servidor autoritativo tem dentro dele uma tabela de nomes, e essa tabela se parece mais ou menos com isso:
+
+lab.crowsec.com.br
+
+
+Subdominio   |       Tipo       |      Valor  
+                         
+lab 		     A		  192.168.1.10 
+lab                 TXT           'saddaddadad'             
+@                    A            192.168.1.11   
+swh                CNAME
+
+
+
+crowsec.com.br -> 192.168.1.11
+lab.crowsec.com.br -> 192.168.1.10
+swh.crowsec.com.br -> swh.wordpress.com
+swh.crowsec.com.br -> ? (CNAME -> swh.wordpress.com)
+swh.wordpress.com -> (A -> 1.2.3.4)
+
+
+A -> IPv4
+AAAA -> IPv6
+CNAME -> Aponta para o DNS
+TXT -> Entrada de anotação
+MX -> Email resposanvel pelo dominio
+SOA -> Validações de dominio
+NS -> Representa quais são os servidores resposaveis por aquela entrada
+-----------------------------------------------------------------------------------
+° A -> Endereço IPv4
+
+° AAAA -> Endereço IPv6
+
+° CNAME -> Cname é quando um dominio aponta para outro dominio, e em algum momento se converte em um endereço IP. Essa entrada aponta pra um outro endereço DNS
+
+° TXT -> Essa entrada serve para validar os dominios especificos. É uma entrada de anotação e serve para digitarmos algum texto. Algumas aplicações utilizam esse tipo de entrada para validar que um dominio é desse dono mesmo
+
+° MX -> Responsavel por apontar pra qual servidor de email responsavel desse dominio
+
+° SOA -> Respostas autoritativas de dominio, Essa é uma das formas de seu servidor DNS local ou resolver descobrir se o dominio teve uma alteração para salvar a nova entrada em cache
+
+° NS -> Representa quais são os servidores resposanveis por aquela entrada

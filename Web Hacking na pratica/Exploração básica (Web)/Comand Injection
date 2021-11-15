@@ -1,0 +1,34 @@
+O QUE É ESSA FALHA? -> Basicamente, essa vulnerabilidade funciona permitindo executar remotamente comandos dentro do sistema enviando uma requisição HTTP.
+-----------------------------------------------------------------------------------POR QUE EXISTE E COMO ACONTECE ESSA VULNERABILIDAE -> Linguagens de progamação geralmente existem comandos como os.system, execve, system e etc, que permitem que de dentro de um script ou de um código compilado dessa linguagem dentro do sistema operacional. Por exemplo no PHP, para digitarmos um comando dentro do sistema operacinal utilizamos a seguinte sintaxe:
+
+<?php
+system('pwd');
+
+O script irá executar um comando pwd no terminal, podemos utilizar esse código para qualquer comando linux de dentro de um script PHP. Esse tipo de comando é muito utilizado em aplicações para chamar outros scripts, ou binários e coisas assim.
+
+A vulnerabilidade ocorre principalmente por os desenvolvedores deixarem passar diretamente para o backend essas entradas sem validação e sem tratamentos, dessa forma podendo ser manipulada por um atacante ou algum agente malicioso.
+
+Temos por exemplo uma aplicação que executa os comandos dentro do servidor pelo ID deles, e o backend funciona mais ou menos da seguinte maneira:
+
+<?php
+/index.php?pid=123 //URL
+
+$pid = $_GET['pid'];
+system('kill -9 '. $pid);
+
+Dessa forma podemos concatenar um comando na execução do kill utilizando a seguinte sintaxe:
+
+<?php
+/index.php?pid=123;ls //URL
+
+$pid = $_GET['pid'];
+system('kill -9 '. $pid); // COMO FICARIA NA EXECUÇÃO DO SCRIPT
+
+Assim então temos um comand injection, uma forma de injetar comandos diretamente dentro do servidor
+-----------------------------------------------------------------------------------
+ALGUMAS FORMAS DE SE CONCATENAR COMANDOS NO LINUX -> Para fazermos isso, podemos utilizar no final do comando o ; dessa forma ele irá executar um e após isso executará o outro. Também podemos utilizar o && (2 E comercial) e ele também irá executar os comandos de forma seguida. Também podemos utilizar o | para pegar o resultado de um comando e enviar para outro.
+-----------------------------------------------------------------------------------FORMAS DE SE EXPLORAR ESSA VULNERABILIDADE -> Para fazermos a exploração dessa vulnerabilidade, devemos primeiro encontrar o ponto vulneravel de injeção de comando, que pode ser uma parte da aplicação que realiza uma função de sistema operacional, um carregamento de imagem ou algo do genero. Após isso podemos ir concatenando comandos junto com o que era pra ser enviado pelo fluxo normal de execução do progama, pore exemplo no lab, se trata de uma aplicação que faz um ping, então devemos passar um ip concatenado com algum comando: 127.0.0.1;ls -la
+
+Dessa forma a aplicação segue seu fluxo mas também retorna o comando ls. Assim podendo explorar diretamente o servidor das aplicações vulneraveis.
+----------------------------------------------------------------------------------
+CONSIDERAÇÕES FINAIS -> Toda vez que percebermos um código que irá rodar dentro do servidor, podemos tentar inferir na aplicação e injetar comandos. Podemos começar a analise inserindo comandos simples com ; (ou &&) e ir fazendo nossos testes. Devemos ter em mente também de que se conseguirmos realizar a injeção, podemos utiliza-lá para começar uma shell reversa.

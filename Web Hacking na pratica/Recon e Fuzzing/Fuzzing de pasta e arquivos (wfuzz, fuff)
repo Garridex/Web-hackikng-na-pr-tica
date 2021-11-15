@@ -1,0 +1,35 @@
+O que é fuzzing? -> Fuzzing é uma forma de descobrirmos coisas que estão do lado do servidor que não temos acesso, por exemplo nomes de arquivos, nomes de pastas dentro do servidor, nomes de parametros dentro das aplicações ou rotas. Tudo isso é feito utilizando ferramentas.
+-----------------------------------------------------------------------------------
+	                 FUZZING DE ARQUIVOS E DIRETORIOS COM WFUZZ
+	           
+Arquivos -> Serve para sabermos se temos um arquivo index.php, index.html, pagina.php. Pra isso serve o fuzzing de arquivos.
+
+Diretorios -> Serve para sabermos se temos uma pasta chamada por exemplo de clientes, ou uma pasta chamada arquivos. Tudo isso dentro do servidor
+	                   
+Alguns parametros: 
+· Na url do endereço, devemos colocar no final /FUZZ, assim, o wfuzz irá substituir pelos arquivos que estamos pesquisando naquele servidor
+
+· -c -> deixa o output colorido
+
+· -z -> Especifica se quisermos fazer o scan baseado em arquivos ou em ranges (para utilizarmos devemos especificar N-N de N até N).
+
+· Após o -z, devemos espefiicar arquivos da seguinte maneira -> file,nomedoarquivo
+
+· --hc -> Essa cofiguração serve para escondermos algum status code, podemos filtrar mais de um status code, basta colocarmos uma virgula e os outros status code que queremos. exemplo: 404,403,301
+
+. -t -> número de threads que a aplicação vai rodar
+
+· --sc -> serve para sabermos somente um status code, por exemplo o 200
+
+. Para testarmos arquivos podemos colocar /indexFUZZ
+-----------------------------------------------------------------------------------
+		        FUZZING DE PARAMETROS
+		         
+Parametros -> Uma boa lista para nomes comuns de parametros é burp-parameter-names, que são vários parametros comuns encontrados em aplicações Web.
+
+·Para testarmos parametros, devemos utilizar um ?FUZZ no final da URL do nosso alvo, assim ele irá pegar cada linha do arquivo e colocar como se fosse um parametro GET na URL
+
+· --hh -> Esconde a quantidade de caracteres
+
+· Quando a aplicação retorna somente um status code o 200 por exemplo, devemos filtrar ou por caracteres ou pela quantidade de linhas e para fazermos isso, pegamos os caracteres comuns que aparecem no nosso fuzzing, 2000 por exemplo e barramos eles
+

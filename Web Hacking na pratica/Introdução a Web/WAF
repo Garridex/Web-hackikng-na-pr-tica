@@ -1,0 +1,4 @@
+Um firewall é um controle de acesso a rede, um servidor, um serviço dentro de uma nuvem, uma rede local e etc... Um Web application firewall faz justamente isso só que volto a aplicações web, se trata de um software para gerenciar as conexões que ocorrem numa aplicação web. O foco do WAF é somente aplicações Web. 
+Quando um usuario acessa um site com WAF, ele analisa a requisição e se tiver uma payload, ou qualquer tipo de ataque, ele barra a requisição entre o cliente e o servidor. Alguns WAFS exibem uma tela de bloqueio  ou até mesmo dropar a conexão quando ele detecta algo malicioso. 
+
+Também existe um módulo que pode ser instalado no apache chamado de ModSecurity que serve para fazer o minimo das proteções que um WAF faz.

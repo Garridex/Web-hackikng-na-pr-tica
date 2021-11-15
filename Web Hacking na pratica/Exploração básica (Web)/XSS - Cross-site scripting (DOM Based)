@@ -1,0 +1,15 @@
+XSS DOM Based -> Essa categoria de XSS é um pouco diferente, ele é baseado no DOM, na página que estamos acessando. Não é o backend o responsavel por injetar diretamente uma propriedade em um conteudo. No caso de um XSS stored, quem faz o processamento da entrada de dados da aplicação é o backend. Essa categoria de XSS a vulnerabilidade ocorre somente no lado do cliente (front-end).
+-----------------------------------------------------------------------------------
+COMO IDENTIFICAR UM XSS DOM BASED? -> Ao analisarmos o código-fonte da aplicação, depois de ja termos inserido a nossa consulta, iremos perceber que o que inserimos não irá aparecer, isso significa que as entradas ficam somente no front-end da aplicação.
+-----------------------------------------------------------------------------------
+COMO OCORRE A VULNERABILIDADE? -> O código vulneravel é o seguinte:
+function pesquisar(pesquisa) {
+          document.getElementById('searchMessage').innerHTML = pesquisa;
+      }
+      var pesquisa = (new URLSearchParams(window.location.search)).get('search');
+      if(pesquisa) {
+          pesquisar(pesquisa);
+      }
+
+Ele faz com que o js pegue um elemento da página (no nosso caso a entrada do formulário, se tratando do searchMessage), ele pega os parametros passados e grava dentro da tag span. Como ele não está fazendo uma sanitização da aplicação, então podemos injetar um código js.
+-----------------------------------------------------------------------------------COMO EXPLORAR UM XSS DOM BASED -> Para explorarmos é exatemente a mesma coisa que os outros tipos de XSS, a unica coisa que muda é que o parametro vulneravel é processado pelo fron-end e não pelo backend.

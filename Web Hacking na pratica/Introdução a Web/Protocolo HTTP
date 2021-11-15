@@ -1,0 +1,42 @@
+		         HYPER TEXT TRANSFER PROTOCOL
+		         
+O http nada mais é que uma comunicação entre cliente e servidor, o cliente faz uma HTTP REQUEST e o servidor responde com uma HTTP RESPONSE. 
+Nas requisições, temos duas partes, O Header e o Body, sendo elas separadas por uma linha em branco na requisição HTTP. Toda vez que acessamos um site, ele vem com um HTML e esse vem no corpo da resposta HTTP. 
+
+EXEMPLO DE UMA RESPOSTA HTTP:
+
+HTTP/1.1 301 Moved Permanently
+Location: http://www.google.com/
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 30 Aug 2021 22:43:09 GMT
+Expires: Wed, 29 Sep 2021 22:43:09 GMT
+Cache-Control: public, max-age=2592000
+Server: gws
+Content-Length: 219
+X-XSS-Protection: 0
+X-Frame-Options: SAMEORIGIN
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>
+
+
+
+A primeira parte antes do espaço em branco se trata da requisição, já a segunda parte depois do espaço em branco se trata do corpo da resposta. Isso são chamados de RESPONSE HEAD e RESPONSE BODY. Aqui nesse caso, tivemos um redirecionamento, pois procuramos google.com, então fomos redirecionados até www.google.com
+-----------------------------------------------------------------------------------
+                          PARTES DA REQUISIÇÂO
+                          
+° A primeira linha nos diz qual a página que queremos acessar, qual o metodo que estamos utilizando e qual a versão do protocolo estamos utilizando. Tudo que vem após a primeira barra da requisição, isso é GET / <- Essa barra, é a parte do site que iremos acessar, se por um exemplo tivermos uma parte do site que é www.crowsec.com.br/contato.php, a nossa requisição seria GET /contato.php.
+
+° O host -> é o endereço do site que estamos acessando
+
+° Accept -> Isso se refere ao tipo de conteudo aceito pelo browser
+
+° Accept-Encoding -> Tipos de compactação aceitas pelo browser. ALguns site compactam a resposta para termos uma comunicação mais rapida
+
+° Accept-Languange -> Linguagem aceita pelo browser 
+
+° Connection -> Como manter o tipo de conexão após recerbemos a resposta

@@ -1,0 +1,12 @@
+PORT SCAN -> Ou scan de portas, consiste em fazer a analise de quais portas da aplicação estão abertas e quais serviços estão rodando. A ferramenta mais utilizada para isso é o nmap, então é ela que iremos utilizar.
+-----------------------------------------------------------------------------------
+
+· -v -> modo verbose que serve para sabermos o que está ocorrendo no scan (para aumentarmos o nivel de intensidade, podemos utilizar -vv ou -vvv)
+
+· -Pn -> Serve para não enviar pacotes icmp, assim evitando o firewall
+
+· -sV -> Serve para vermos os serviços que estão rodando atrás daquelas portas abertas e pegas pelo nmap
+
+· -A -> Podemos utilizar o nmap para rodar scripts dentro das portas, esse parametro faz uma enumeração mais a fundo
+
+· -p- -> Serve para fazermos o scan em todas as portas possiveis dentro da conexão TCP

@@ -1,0 +1,9 @@
+° ParamSpider -> Essa ferramenta vai em busca de diversos parametros dentro da aplicação alvo, o seu output já conta com a url para fazermos o fuzzing no parametro. Para especificarmos um dominio para ela podemos utilizar o -d e o dominio alvo desejado
+------------------------------------------------------------------------------------
+° Aquatone -> Para utilizarmos essa ferramenta, devemos utilizar antes o subfinder e passar o resultado via pipe pra cá, assim quando passarmos o aquatone irá acessar todos os subdominios e tirar um print do que estiver rodando por lá. É importante rodarmos essa ferramenta num linux que  tenha uma interface grafica. Quando sair o output, ele irá gerar uma página html pra gente contendo todos os prints, basta abrirmos ela para visualizarmos tudo. 
+Uma das vantagens dessa ferramenta é sabermos quais tecnologias estão rodando naquele site.
+------------------------------------------------------------------------------------
+° KXSS -> Essa ferramenta deve ser usada em conjunto com o paramspider, passando as saidas dele pro kxss validar se temos um parametro refletido. A ferramenta nos mostra qual simbolo (< > ' ") o parametro da aplicação está aceitando, com isso podemos saber o que trigar na aplicação.
+
+-----------------------------------------------------------------------------------
+·O que é uma parametro refletido? -> Um parametro refletido significa que o backend responde tudo que enviamos ao servidor, por exemplo uma < > ou "" ou ''. Dessa forma conseguimos injetar parametros. Com essa ferramenta conseguimos testar XSS, SQLI e outras vulnerabilidades. Podemos analisar isso passando o parametro pra aplicação e analisando no código-fonte se conseguimos encontar aquela palavra contida refletida ali.

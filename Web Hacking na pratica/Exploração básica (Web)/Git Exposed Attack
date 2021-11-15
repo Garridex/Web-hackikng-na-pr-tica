@@ -1,0 +1,16 @@
+Git exposed é uma vulnerabilidade e um misingconfiguration, ela permite que o atacante tenha acesso a todo o código da aplicação. A primeira coisa a se fazer já com o endereço do nosso laboratorio é escanear e encontrar a vulnerabilidade. Porém antes veremos o que é o git e como ele funciona.
+-----------------------------------------------------------------------------------
+
+O QUE É GIT? -> O git é uma ferramenta de versionamento de código, ele serve para manter repositorios e versões dos códigos. Temos tanto repositorios locais e repositorios remoto, o github é um repositorio remoto, assim como o bitbucket, gitlab e etc. Quando damos um git init, estamos criando um repositorio local na nossa máquina.
+-----------------------------------------------------------------------------------
+COMO OCORRE A VULNERABILIDADE? -> A falha ocorre quando algum administrador de servidor quando vai subir a aplicação para um servidor de produção, ele sobe essa pasta junto, que nunca pode ocorrer, pois ficam dentro delas as branches e dentro de objects fica tudo que a gente alterou, dessa forma podemos ver todas as versões do código
+-----------------------------------------------------------------------------------
+COMO DETECAR ESSA VULNERABILIDADE? -> Podemos detectar utilizando fuzzing, também podemos utilizar a extesão DOTGIT. Podemos fazer o processo de verificação manual e para isso utilizaremos o wffuz, faremos o fuzzing e se eles nos retornar com um status code 200 na pasta .git/HEAD, significa que temos o arquivo exposto (utilizei a commo.txt com wordlist)
+-----------------------------------------------------------------------------------
+COMO EXPLORAR ESSA VULNERABILIDADE? -> Para explorarmos essa vulnerabilidade, devemos utilizar o git dumper passando a url como parametro e uma pasta para salvar os arquivos do git. A ferramenta utiliza a pasta para baixar todos os arquivos e incluindo a pasta .git, e como não consegimos encontrar a flag dentro dos arquivos, podemos então utilizar a pasta .git já que com a ferramenta estamos dentro do repositorio e podemos utilizar os comandos git log (mostra o log de alterações do código versionado) e git show (podemos passar um código contendo as alterações commitadas e analisar os códigos e as versões novas com o que entrou e o que saiu).
+Somente o código-fonte exposto do site já é um risco, porém podemos analisar dentro dos repositorios, graças ao nosso conhecimento em git dumper, então isso torna a falha muito mais perigosa e possivel de diversas analises do código-fonte da aplicação.
+Quando chamamos o o .git, e acessamos ele no servidor e baixamos todo o repositorio remoto pra nossa máquina, o que nos permite utilizar todo os comando padrões do git, então por isso podemos fazer essa analise de toda a aplicação e de suas branches, seus logs e etc...
+-----------------------------------------------------------------------------------COMANDOS UTEIS PARA ESSA VULNERABILIDADE -> 
+
+· git log -> nos mostra o log de commits
+· git show -> passando um commit como parametro, podemos analisar as mudanças feitas no código

@@ -1,0 +1,94 @@
+NOSQL INJECTION O QUE É E COMO FUNCIONA ESSA VULNERABILIDADE? -> Antes de entendermos o que é uma vulnerabildade, devemos entender o que é um NoSQL. No banco de dados tradicional (relacional), nós temos um relacionamento entre colunas e tabelas, já num banco de dados não relacional (NoSQL), nós temos um banco de dados que é muito mais rápido e permite fazer consultas mais rápidas em comparação com o banco relacional. Isso se deve ao fato de não haver indices, nem chaves primárias, nem chaves estrangeiras, o que deixa o motor mais lento, já que o não é necessário fazer essas consultas, o motor é mais rápido. Nos bancos relacionais, temos querys a serem rodadas para fazermos alguma instrução, já nos bancos não relacionais temos collections, que são algo parecido com as tabelas dos bancos normais. A grande vantagem de um banco de não relacional é poder ter banco de dados dinamicos, ou seja, podemos trocar estrutura do banco de dados a qualquer momento, o banco de dados não relacional não trabalha com linhas e tabelas, também temos outra caracteristica importante que  é: esse tipo de banco de dados é orientado a documentos, o que significa na prática que a consulta de dados ocorre em função das informações contidas nos documentos em vez de aplicação de comandos para manusear tabelas. Enquanto o banco de dados relacional armazena os dados em um determinado local e criando uma relação entre eles, nos bancos não relacionais eles são tratados separadamente, ou seja, as informações necessárias para indentifica-los são armazenadas no próprio documento. por exemplo, temos um banco de dados com a seguinte estrutura (collection):
+
+	{
+	"id",
+	"nome"
+	}
+
+
+O nosso banco de dados não relacional pode variar a sua estrutura a cada novo registro, tal como:
+
+{
+	"id":1,
+	"nome":Carlos
+},
+{
+	"id":2,
+	"nome":Carlos,
+	"idade": 19
+}
+
+A estrutura variou mesmo sem termos defindo pré-definido o outro campo que apareceu (idade), com isso, os bancos não relacionais tem uma estrutura mais flexivel para ser utilizada e criar os dados e armazenar da forma que acharmos melhor para o banco.
+
+A vulnerabilidade ocorre quando conseguimos injetar algums parametros no banco de dados NOSQL da aplicação, sendo assim é parecida com a injeção de SQL, porém, é utiilzando as métricas do banco de dados NOSQL.
+-----------------------------------------------------------------------------------
+UTILIZANDOS OPERADORES NO BANCO DE DADOS NOSQL -> Os operadores basicamente são iguais aos que temos na matematica, só que no caso são operadores de comparação de valor, temos por exemplo alguns operadores de comparação:
+
+·$eq -> corresponde a valores que são iguias a um valor especificado
+  exemplo->  "username" $eq "vitor" -> Esse valor tem que ser igual a vitor, e se for diferente não irá retornar nada.
+
+·$gt -> Corresponde a valores maiores que um valor especificado
+  exemplo->  "idade" $gt 20 -> Esse valor tem que ser maior do que 20.
+  
+·$gte -> Corresponde a valores maiores o iguais a um valor especificado
+  exemplo->  "idade" $gte 20 -> Esse valor tem que ser maior ou igual 20.
+  
+·$in -> Corresponde a qualquer um dos valores especificados em uma matriz -> 
+ exemplo-> "descricao" $in "exploit" -> Se dentro da descrição tiver qualquer coisa com o valor exploit ele será retornado.
+ 
+·$lt -> Corresponde a valores inferiores a um valor especificado.
+  exemplo->  "idade" $lt 20 -> Esse valor tem que ser menor do que 20.
+
+·$lte -> Corresponde a valores maiores o iguais a um valor especificado.
+  exemplo->  "idade" $lte 20 -> Esse valor tem que ser menor ou igual 20.
+  
+·$ne -> Corresponde a todos os valores que não são iguais a um valor especificado
+ exemplo-> "username" $ne "carlos" -> retorna todos os resultados que não forem carlos
+
+·$nin -> Não corresponde a nenhum dos valores especificados em uma matriz.
+
+Esses comparadores são muito utilzados quando o backend ta fazendo validação utilizando NOSQL e a autenticação de usuario (login) como nós sabemos é uma comparação de usuarios e senhas com o banco de dados. É necessário utilizarmos operadores pois assim conseguiremos inferir na aplicação.
+-----------------------------------------------------------------------------------
+COMO OCORRE ESSA VULNERABILIDADE? -> Da mesma forma que fazemos uma injeção num parametro vulneravel num banco de dados normal, podemos fazer algo parecido, porém devemos injetar dentro de uma collection do banco de dados não relacional. A parte mais legal que temos no mongoDB é que dá para extrairmos dados, exatamente como num SQLI padrão, que utilzar um banco SQL, só que também podemos fazer um bypass burlando a autenticação quando a aplicação está utilzando um banco não relacional
+
+COMO PODEMOS EXPLORAR UMA APLICAÇÃO FEITA UTILIZANDO NOSQL E BURLAR UMA AUTENTICAÇÃO? -> No campo de login, podemos utilizar um parametro $ne para burlar uma autenticação, já que ele retornaria todos os valores, por exemplo
+
+		username $ne a and password $ne test
+	
+Isso irá trazer do banco de dados todos os usuarios que não tenham o nome de usuario a e a senha teste, isso significa que ele irá retornar todos os usuarios cadastrados no banco, assim conseguimos burlar a autenticação. Normalmente a comparação é feita utilizando = e não $ne, mas quando estamos falando de NOSQL injection, conseguimos injetar esse tipo de comparação na minha requisição, isso é possivel pela forma que o php interpreta e requisição GET, Podemos fazer o php criar essa comparação de forma errada e permitir injetarmos um NOSQL injection.
+-----------------------------------------------------------------------------------
+COMO EXPLORA ESSA VULNERABILIDADE? -> O Primeiro passo para explorar essa vulnerabilidade é utilzarmos o burp suite para interceptar as requisições da aplicação. Ao fazermos a analise no nosso laboratorio, enviamos uma requisição com o login com as credenciais admin/admin e com isso obtemos uma resposta de login ou senha inválido.
+-------------------------
+PHP INTERPRETA ARRAY DE UMA FORMA ESTRANHA -> Quando passamos um array para o backend, o PHP interpreta de um jeito estranho quando especificamos no front-end um campo input da seguinte maneira:
+	
+	<input type="text" name="texto[]" placeholder="campo 1">
+
+O php interpreta como um array, ele entende como se estivessemos enviando um array para ele, e podemos injetar dentro do array um valor, a chave desse array pode ser forjada por nós injetando um valor entre as chaves da forma que quisermos.
+
+	<input type="text" name="texto[asdada]" placeholder="campo 1">
+
+Quando falamos de collections e levamos isso para o backend, se conseguirmos adulterar a forma que o backend está interpretando, ao invés de ser uma string, alterarmos para um array, podemos alterar o interpretador lógico do MongoDB.
+
+Podemos pegar a requisição feita para a aplicação usando o burp e alterarmos os parametros username e password, assim teremos um array:
+
+		username[]=admin&password[]=admin
+		
+Como ele pega o valor do username e do password e envia direto para a collection do mongo, podemos criar operadores lógicos, podemos utilizar por exemplo o operador $in para dar match em qualquer valor especificado num array, nesse caso, ao alterarmos a solicitação para a seguinte:
+	
+		username[$in]=admin&password[$in]=admin
+	
+Obtivemos um erro 500 do servidor, isso significa que ele nos respondeu a solicitação e que o php interpretou e processou o nosso array injetado.
+
+Ao fazermos o mesmo processo, porém alterando o username e o password para outro operador, utilizando o operador $ne (dá match em qualquer coisa que não contenha aquele caractere especificado)
+
+		username[$ne]=ç&password[$ne]=ç
+		
+Como no banco de dados não tem nenhum username e senha com ç, conseguimos fazer uma injeção nesse banco de dados. Essa vulnerabilidade ocorre por que de acordo com a interpretação do php dos dados que enviamos para ele via POST e coloca na collection, deixa vulneravel o banco para fazermos a injeção de comparadores lógicos do mongo para burlar uma autenticação.
+
+Podemos usar a injeção para descobrirmos o login e a senha do usuario, para isso, utilizaremos um outro operador, o regex, se trocarmos o operador para regex no parametro username, podemos ir fazendo o levantamento letra por letra do nome do usuario:
+
+		username[$regex]=^c&password[$ne]=ç
+		
+Dessa forma teremos uma resposta 200, o que sinifica que a primeira letra do nome do usuario é C, podemos seguir fazendo esses testes ou criar um script para ficar testando vários nomes de usuarios para descobrir o login e a senha do usuario.
+
+Para exploramos essa vulnerabilidade, precisamos detectar primeiro a vulnerabilidade, devemos ter um mindset especifico para essa injeção ocorrer corretamente.

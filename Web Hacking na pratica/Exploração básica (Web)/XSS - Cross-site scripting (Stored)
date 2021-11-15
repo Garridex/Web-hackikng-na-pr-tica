@@ -1,0 +1,7 @@
+XSS stored -> também conhecido com XSS armazenado, é um tipo de XSS que ocorre em campos de aplicações que tem o parametro vulneravel e que armazenam essas entradas da aplicação em um banco de dados, em cache ou em algum lugar da aplicação. Dessa forma quando injetamos a payload nesse campo vulneravel e recarregamos a página, fazemos assim com que o backend armazene nossa payload maliciosa e execute nosso script.
+-----------------------------------------------------------------------------------
+POR QUE ESSA VULNERABILIDADE É MAIS PERIGOSA -> esse tipo de XSS fica armazenado no servidor da aplicação, então qualquer um que acessar aquela aplicação terá aquele código malicioso rodando ali
+-----------------------------------------------------------------------------------
+COMO RECONHECER A VULNERABILILDADE -> Para encontrarmos devemos analisar como a aplicação lida com as entradas de dados dos usuarios, dessa forma podemos começar a tentar injetar códigos html, se der certo podemos evoluir a tentar injetar códigos javascript
+-----------------------------------------------------------------------------------
+COMO EXPLORAR A VULNERABILIDADE -> Para explorarmos podemos injetar a seguinte payload: <script>alert('teste')</script>

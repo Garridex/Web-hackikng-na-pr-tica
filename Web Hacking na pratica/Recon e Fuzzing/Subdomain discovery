@@ -1,0 +1,41 @@
+Subdomain discovery -> Tres formas onde é possivel obtermos acesso e dados sobre subdominios. São essas formas Historico, brute force e certificados passivos
+-----------------------------------------------------------------------------------
+ 				HISTORICO
+ 				
+Utilizando historico de subdominios, criamos por exemplo um subdominio para crowsec.com.br, esse subdominio existiu por 3 meses, depois foi desligado. As ferramentas abaixo listam quais eram os subdominios existentes no passado da aplicação, nesse processo de descoberta é importante termos esse tipo de analise
+
+° http://web.archive.org -> Essa ferramenta nos mostra como eram os sites e o seu historico de alteração, podemos vizualizar como os sites eram por exemplo em 2002, 2015, 2019 e por ai vai. Esse site guarda informações por exemplo, temos uma versão da aplicação que o site redireciona pra um sistema interno, com essa mentalidade conseguimos voltar no tempo e podemos ter uma boa visibilidade para podermos atacar features que não existem mais porém podem estar implementados ainda
+
+
+° http://securitytrails.com -> Com essa ferramenta, podemos analisar de forma passiva dados sobre o DNS, Sub-dominios, historicos de alterações e etc. Com ele podemos vizualizar o historico dos ips da aplicação, dessa forma se implementaram um WAF recentemente podemos utilizar para tentar encontrar o IP real do servidor e fazermos um ataque direto a ele se não tiver bloqueado o acesso direto.
+-----------------------------------------------------------------------------------
+                                BRUTE FORCE
+Podemos utilizar ferramentas para fazer brute force nos dominios para descobrirmos eles na base da tentiva.
+
+O que seria um brute force de DNS? -> No linux existe uma ferramenta chamada Host, ela serve para resolver o endereço DNS do servidor e nos volta o endereço IP dele, por exemplo:
+
+host crowsec.com.br
+crowsec.com.br has address 172.67.175.33
+crowsec.com.br has address 104.21.56.7
+
+O host resolveu os endereços DNS e converte para IP. Como conseguimos saber quais nomes de Dns existem? Quando testamos usando a ferramenta host uma suposta entrada de DNS e ela não existir, a ferramenta não volta um erro (not found). Com isso podemos montar um script para fazermos esse brute force de subdominios. Podemos criar um código direto no terminal para fazermos isso, ele é o seguinte:
+
+for subdominio in $(cat sub.txt); host $subdominio.mercadolivre.com.br | grep -v "NXDOMAIN" 
+
+· SUBLIST3R -> Essa ferramenta feita em python, se não passarmos nenhum parametro (somente o dominio) irá fazer um reconhecimento passivo, podemos passar o entanto a função -b para fazermos um brute force, esse modo utiliza o subbrute para fazer brute force.
+
+· Subbrute -> Funciona da mesma forma que a ferramenta acima, serve para fazer brute force também, ele utiliza de diversos servidores resolvers para fazer esse tipo de pesquisa.
+
+° Esse tipo de Brute force não é tão efetivo, pois se tivermos por exemplo awedadada.mercadolivre.com.br, não iremos encontrar com esse script, pois ele depende de wordlists e isso é muito especifico.
+-----------------------------------------------------------------------------------
+                           CERTIFICADOS E PASSIVOS
+                           
+Também podemos utilizar algumas ferramentas para pegarmos os subdominios de forma passiva. Uma forma ativa é fazer um brute-force, uma comunicação com o servidor DNS daquele dominio, uma forma passiva é utilizar fontes de terceiros.
+
+O que seriam os baseados em certificados -> Tecnicamente, o certificado digital consiste em um arquivo eletrônico, emitido por uma Autoridade Certificadora. Ela funciona como se fosse o DETRAN para a emissão de carteiras de habilitação: é a entidade responsável por verificar a identidade do titular antes de realizar a certificação. Os subdominios tem certificados também, então podemos pesquisar pelos certificados de um dominio, utilizando ferramentas como:
+
+° crt.sh -> Site para pesquisarmos certificados de aplicações e seus subdominios, com isso temos uma analise passiva de DNS e seus subdomionios através de certificados. Normalmente quando isso existir é por que temos uma entrada DNS, em alguns casos, umas empresas criam um certificado para ser utilizado dentro da rede da empresa, ai teriamos por exemplo intranet.crowsec.com.br, e esse dominio utiliza o certifcado, se tentarmos resolver esse dominio de fora da rede da empresa pode ser que não resolva, mas dentro da rede sim. Isso é bom de nos atentarmos para caso de um pentest.
+
+° CTFR -> Faz o mesmo processo acima porém de forma automatizada, isso é uma ferramenta feita em python que procura os certificados dos subdominios
+
+° Subfinder -> Essa ferramenta não faz brute force, nem faz reconhecimento baseado em certificado, ele pega todos os subdominios reconhecidos e nos retorna, também podemos configurar nossas chaves de APi de plataformas como shodan e security trail e a pesquisa sairá de forma mais completa ainda. Essa é a ferramenta mais completa de todas.

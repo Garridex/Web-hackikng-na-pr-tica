@@ -1,0 +1,9 @@
+O que é recon e como funciona -> Recon ou também como conhecido intelligence Gathering, se trata de coletar o maximo de informações possiveis sobre o alvo que iremos fazer o pentest ou o bugbounty. Esse módulo é para termos uma ideia de tecnicas e de ferramentes que podemos utilizarmos para fazermos o recon e termos sucesso nas proximas fases de uma invasão.
+-----------------------------------------------------------------------------------
+Subdomain discovery -> A ideia é obter o maximo de subdominios de um dominio raiz/principal, aqui eu vou demonstrar algumas técnicas para obter o máximo de informações internas e externas apenas pelos subdominios
+
+Application discovery -> O objetivo nessa etapa é obter informações sobre as aplicações que estão rodando nos subdominios, utilizamos prints de sites e informações como URLS e parametros de aplicações. Também cabe a essa parte descobrir tecnologias que estão rodando nos sites
+
+Web fuzzing -> O objetivo nessa etapa é obter informações sobre quais arquivos, rotas e pastas existem dentro de uma aplicação web e/ou endpoint de API.
+
+Automation -> Podemos utilizar algumas automações para nos ajudar a deixar este trabalho mais rápido e efetivo, vou falar um pouco de uma ferramenta muito boa pra isso.

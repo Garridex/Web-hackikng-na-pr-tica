@@ -1,0 +1,3 @@
+                               SERVIDORES WEB 
+
+No servidor, se ele detectar que é algum documento .html, ele somente envia ao browser, já ser for uma linguagem de backend ele precisa de motores para rodar o código. Se não tivermos o motor instalado, ele somente irá baixar os arquivos e não irá interpretar.

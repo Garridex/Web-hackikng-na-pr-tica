@@ -1,0 +1,17 @@
+SESSION HIJACKINK E PORQUE ISSO É UMA VULNERABILIDADE -> Esse ataque normalmente depende de outras vulnerabilidades para ocorrer. A forma mais comum de fazermos isso é atráves de um XSS, quando temos um XSS podemos ler o cookie de sessão do usuario com o código de identificação da sessão dele, então podemos conseguimos logar na conta desse usuario. O PHP e a maioria dos sistemas controlam o acesso de um usuario dentro do sistema através de um sessão, eles fazem isso salvando um código dentro de um cookie, ao iniciarmos uma sessão no backend, e o usuario acessa o site, o backend envia pro frontend na requisição, um cabeçalho set-Cookie, só que esse cookie no caso do php chama PHPSESSID (php session id). Toda vez que o usuario estiver acessando um site, ele irá enviar junto no cabeçalho esse cookie para o site saber quem é que está acessando a aplicação, então dentro do PHP podemos setar dados dentro desse cookie:
+
+	<?php
+	session_start(); 
+	$_SESSION['usuario'] = 'vitor';
+	echo "olá {$_SESSION['usuario']}";
+
+Mesmo se apagarmos a linha 2, o servidor le o código de identificação da sessão do usuario (que fica salvo no navegador) e nós retorna a informaçãos. Por padrão o php guarda essas informações dentro da pasta /var/lib/php/sessions, é nessa pasta que ficam setados e guardados os cookies de sessão. Se dermos um cat em alguns dos arquivos que ficam dentro dessa pasta, que tem seus nomes mais ou menos parecidos com esse daqui: sess_g9pkshjit5smveenm1c9rb5qog  O conteudo será parecido com esse abaixo:
+
+		usuario|s:6:"Carlos"
+
+O php criou um objeto serializado e gravou dentro desse arquivo, por isso ele sabe toda a vez que acessamos o site quem é o usuario. Os cookies de sessão, normalmente são utilizados para fazermos o controle de autenticação dos usuarios que acessam o site.
+-----------------------------------------------------------------------------------
+COMO A VULNERABILIDADE OCORRE? -> A vulnerabilidade ocorre quando descobrimos um cookie de sessão de um usuario, ou de um administrador e substituir no nosso cookie de sessão e podemos dessa forma logar na conta do usuario. Podemos fazer isso através de um XSS para ler o código de sessão de outro usuario, dessa forma podemos fazer o sequestro de sessão e logar na conta dele.
+-----------------------------------------------------------------------------------
+COMO EXPLORAR ESSA VULNERABILIDADE? -> Alguns administradores de sistemas e alguns softwares de gestão web que deixam a pasta contendo as sessões dos usuarios expostas, pior ainda são as apliacações que deixam as pastas expostas e com acesso dos usuarios a essa pasta. No caso do nosso lab, temos uma pasta chamada sessions, nela podemos ver as sessões dos usuarios logados na apliacação e podemos com essa informação alterar nosso proprio cookie de sessão e darmos o bypass no login e termos acesso a conta de outros usuarios. Essa vulnerabilidade deve ser explorada através de outras, como um xss, comand injection e etc, porém podemos também sempre ao fazermos o fuzzing procurarmos esse arquivos sessions.
+<-- AO EXPLORAR UTILIZAR FIREFOX -->

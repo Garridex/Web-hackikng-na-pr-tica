@@ -1,0 +1,29 @@
+O QUE É OPEN REDIRECT, COMO OCORRE E PORQUE É UMA VULNERABILIDADE? ->	Basicamente o que ocorre é que temos por exemplo uma aplicação, essa aplicação redireciona o usuario a um outro site sem avisar o usuario, isso é, ele faz um redirecionamento a algum  outro site. Essa vulnerabilidade ocorre quando temos uma função na aplicação que redireciona o usuario a outro site, podendo assim ser inferido por algum atacante e alterado, dessa forma podemos redirecionar uma vitima até um site malicioso, ou até um phishing  para coletar dados e etc. Um exemplo de código vúlneravel é o seguinte (código do lab):
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Redirect</title>
+</head>
+<body>
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="/?redirect=https://google.com">here</A>.
+</BODY></HTML>
+
+</body>
+</html>
+
+Podemos alterar a tag e o atributo que ele passa na url (A HREF) para redirecionar para qualquer site, sendo  assim podemos redirecionar para um site de nosso dominio e tentar fazer um phishing de credencias por exemplo, podemos redirecionar até um download de um malware, ou algo relacionado e etc. Essa falha é considerada como criticidade baixa, porém pode ser explorada e levar a algo muito pior, assim como diversas outras vulnerabilidades também.
+----------------------------------------------------------------------------------
+COMO EXPLORAR ESSA VULNERABILIDADE? -> Vamos utilizar de exemplo o nubank 
+(https://nubank.com), e supor que dentro da aplicação web deles temos um redirecionamento para o blog https://nubank.com/?redirect=sitefakedonubank.com), então podemos pegar esse parametro que redireciona e alterar para um site de nosso controle com uma página de pshing, dessa forma podemos fazer com que o usuario insira suas credencias aqui, ou baixe alguma coisa, ou faça uma ação que queremos.
+----------------------------------------------------------------------------------
+COMO ENCONTRAR ESSA VULNERABILDADE? -> Para encontrarmos essa vulnerabilidade, devemos analisar os parametros, para isso podemos utilizar o paramspider e procurar com nomes padrões para redirecionamentos. Segundo o livro Real World BugHuntig, ao procurarmos por essa vulnerabilidade, devemos manter os olhos nos parametros que incluem certos nomes, como redirect, next, entre outros. Devemos manter em mente também que esses parametros nem sempre tem nomes obvios, podendo variar de site pra site, podendo até mesmo ser uma letra só com u ou r. Quando estivermos procurando por um Open Redirect, devemos nos atentar as solicitações GET no historico do nosso proxy que inclui um parametro especificando um redirecionamento de URL.
